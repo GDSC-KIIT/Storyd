@@ -1,0 +1,44 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Comfortaa&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Righteous&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Jost&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/main.css') }}">
+    <title>API - Elders Social Media</title>
+</head>
+
+<body>
+<h1 style="color: purple; font-family: 'Righteous', cursive">API</h1>
+<h2 style="font-family: 'Jost', sans-serif; color: #33A">Social Media for Elderly</h2>
+<br>
+<h3 style="font-family: sans-serif; font-weight: 800; color: #73A">JSON</h3>
+<table style="font-family: 'Comfortaa', cursive;">
+    <tr>
+        <th>URL Postfix</th>
+        <th>Params</th>
+        <th>Description</th>
+        <th>Method</th>
+    </tr>
+    <tr>
+        <td>
+            /api/sentiment
+        </td>
+        <td>text: Text to classify</td>
+        <td>Sentiment Analysis API</td>
+        <td>POST</td>
+    </tr>
+    <tr>
+        <td>
+            /api/keywords
+        </td>
+        <td>
+            text: Text to get keywords from<br>
+            n: Maximum number of tags to return
+        </td>
+        <td>Keywords generating API</td>
+        <td>POST</td>
+    </tr>
+</table>
+</body>
+</html>
