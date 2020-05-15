@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "socialmediabystory",
+  "private_key_id": "b29cac6b20558d92ce1cf7b491ab2b78a9605457",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCisPtKVlU2AZIb\nz4DrIolzgIfFRnedx5LVoTZjh6HvjAsFbR15nZqRdnNW6nC5n2oI51900Jols20g\nadq0BbaRiJFgzVOeWZunUawsqekpftAmhdZN6hiF1XT9Uns3HyTy+PvYkW7cD4MV\n0r0aYxLUMHmR0P+RaCrVTYhPA4tnlkb3GGuhXi2EwlLq6HwbHwxv7p76dTpkU9sL\nEp3YyJOMdB3KWNoyo2QRHHLyvu2V71BanYG1HkXXDUvv4CkFUqURrUxw70JnAG4Z\naGSEmRwAd6FBrGRAcbCWv2SM/W6Chw/jG6Cyt+OobsSaaM7GVAutsrYh1GCFdvK9\necAkigIXAgMBAAECggEAGBci2VVtVWDoKgwQ5+smSp8b+589SR9rOQz1HnR6tcZD\n6jAdGYwNKOr5le4ty561DHp497WH4yXtdnZA4eqn/RF+4sRPVHb/sHKh5Gnd0md/\nxPnedjfAHS6IHewKaMAeMDL5f+O7ya7WV0iW+IL2dSB0b/NwVISwiwM/DYwrJqcC\nJ3BXUn++zoWNjEzaK3yRmRVzc0m/GXxN3Ro4AddCDWXc+VpCHRJM/6zzjqvSQni1\n7kAoY85O7c48q/HHk68aJSsptds/1clK3aWRhOwzPwEZMrqMFwlIafRPG5/hLWQr\n9g9VvgJ1r16T7eEDz34wNDNXlkkLz8pn+GBKPAQx0QKBgQDkzaBTAAlfBB/6bWfQ\nIU0lztl67gkhMIiM/KPknEmu5rVbavPPJ6l47UpnPBG17G2yy9fiF98kDhOc/Og7\nL/yEXHv0JuoDKbwaHsBMYRc+rZWGulgFbPaQwoAArfqc0S7cVTBrdqdSpd0qO8oW\n+VvDOc3WnkL1s2xoFPUPosSoCQKBgQC2B5oNtE40Hq9FH1eKs6f2m2jbU2oTFbgZ\nkS2h7HOs+inMozYi1DNUCT1V8q5ahRpNB4vBXS15Ioor5b1+ERh0tkimfxbZwTCU\nIMXj9ri0PGg9jFb13waKFNMFArHUPFTVQekITOqLGv1bd7w1zetopwNG9+nSoUSF\ntp/uw6yhHwKBgGXFrR2eM4znCc5bocSrO2So2IXcoYT40JRdwAztE71Pc7XhIeew\nDarzaZf32SzhqH3SPAmecqvX8xNuT2IcWycI+D3GnWqgwsGfkgunWC6SCaOu+X4Y\nVKhZS5SBzqq4RS7OWcZDNfQGQRULGT4U1qNE7/EZ3lDp6Tt2rvawgOb5AoGAOYOP\nXlMg/oDPejSb8Vwwbs/NwrbJZjxPjex8EZRnPDlSqbDL8xc/HIdK1PQ3uKwjkkEX\nHEJ3krWiGJqfU8zNAFtz+v9e1fCfi74LKKsU0wXfHctQ0qDkLQ7FWejvDRL+7t7D\nZXcACHG/qX3cfteQUOGsPGkqfP2ta943DDbRPZsCgYA+b1+m2Hb8DZvJsBRGAAuZ\nAfmp9GYxajsPPDbtHrfv3+YwX83E1Rf8bRLeia0UdjNWvVVkEIX6E0T939eEIdXb\n9TLyDUSlFY/NJOYGW90si0IdjS7CqxcO3/ltkyWvM6fk6wMHy7hKETXB1G46kWbP\nZG8xMAP6m564+nrJZx+JAA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "socialmediabystory@socialmediabystory.iam.gserviceaccount.com",
+  "client_id": "101430697776016360633",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/socialmediabystory%40socialmediabystory.iam.gserviceaccount.com"
+}
