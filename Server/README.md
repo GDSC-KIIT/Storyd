@@ -1,4 +1,4 @@
-# YourStory - Server
+# Storyd - Server
 
 Run `python server.py`
 
