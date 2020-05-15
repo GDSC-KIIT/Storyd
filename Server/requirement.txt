@@ -1,0 +1,9 @@
+firebase
+Flask
+Flask-Login
+google-cloud-firestore
+Keras
+nltk
+pandas
+tensorflow
+Werkzeug
