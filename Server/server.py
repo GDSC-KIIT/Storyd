@@ -1,14 +1,13 @@
-import pymongo
-from numpy import argmax, array
+import os
+from google.cloud import firestore
 from flask import Flask, jsonify, render_template, request, url_for
-from tensorflow.keras.models import load_model
 from function_pool import KeyWordGenerator, SentimentDetector, RecommendationEngine
 
 app = Flask(__name__)
 
-# Loading Mongo Driver
-mongoClient = pymongo.MongoClient("localhost", 27017)
-db = mongoClient.storyBasedSocialMedia
+# Loading Cloud Firestore
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "config/socialmediabystory-b29cac6b2055.json"
+db = firestore.Client()
 
 # Initializing APIs
 sentimentDetector = SentimentDetector()
@@ -48,18 +47,16 @@ def keywords():
 @app.route('/api/recommend', methods=['POST'])
 def recommend():
     """
-    Example of a Mongo history db for 2 users:
+    Example of a Firestore history db structure for 2 users:
 
-    {
-        "_id" : ObjectId("5ebd5ea683eb5b356d5c467e"),
+    5ebd5ea683eb5b356d5c467e => {
         "uname" : "alphanikhil",
         "history" : [
             "Action~5",
             "Thriller~4"
         ]
     }
-    {
-        "_id" : ObjectId("5ebd5eaf83eb5b356d5c467f"),
+    fsd32fr283eb5b3daf5c467f => {
         "uname" : "sherlock",
         "history" : [
             "Action~3",
@@ -67,17 +64,20 @@ def recommend():
         ]
     }
     """
-
+    history_collection = db.collection("history")
     history_parsed = []
     u_name = ""
+    top_n = 10
     if request.method == 'POST':
         u_name = request.form.get("username", "")
+        top_n = int(request.form.get("n", "10"))
 
-    for past in list(db.history.find({"uname": u_name}))[0]["history"]:
+    for past in list(history_collection.where("uname", "==", u_name).stream())[0] \
+            .to_dict()["history"]:
         tag, rating = past.split('~')
         history_parsed.append((tag, float(rating)))
 
-    recommends = recommendationEngine.recommend_genres(history_parsed)
+    recommends = recommendationEngine.recommend_genres(history_parsed)[:top_n]
     return jsonify({
         "recommends": recommends,
     })
