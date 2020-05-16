@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:storyd/screens/landing.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -29,9 +30,11 @@ class LoginPageState extends State<LoginPage>
         accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
 
     FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
-
-    print("Name: ${user.displayName}");
-    return user;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (BuildContext context) => LandingPage(),
+      ),
+    );
   }
 
   @override
@@ -80,7 +83,7 @@ class LoginPageState extends State<LoginPage>
                   "Welcome back",
                   style: TextStyle(
                     fontFamily: "CircularStd",
-                    fontSize: 40,
+                    fontSize: 45,
                     color: Colors.orangeAccent,
                   ),
                 ),
@@ -90,7 +93,7 @@ class LoginPageState extends State<LoginPage>
                       "to ",
                       style: TextStyle(
                         fontFamily: "CircularStd",
-                        fontSize: 40,
+                        fontSize: 45,
                         color: Colors.orangeAccent,
                       ),
                     ),
@@ -98,8 +101,10 @@ class LoginPageState extends State<LoginPage>
                       "Storyd",
                       style: TextStyle(
                         fontFamily: "CircularStd",
-                        fontSize: 40,
-                        color: Colors.black,
+                        fontSize: 45,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
