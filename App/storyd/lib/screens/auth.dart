@@ -14,7 +14,7 @@ class LoginPageState extends State<LoginPage>
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<FirebaseUser> _handleSignIn() async {
+  _handleSignIn() async {
     GoogleSignIn googleSignIn = GoogleSignIn();
     GoogleSignInAccount account = await googleSignIn.signIn();
 
