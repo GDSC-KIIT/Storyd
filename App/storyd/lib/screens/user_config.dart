@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:storyd/screens/home.dart';
 import 'package:storyd/screens/special_widgets.dart';
 
 class InterestPool {
@@ -27,13 +29,28 @@ class UserConfigPageState extends State<UserConfigPage> {
   final TextEditingController _interestEditController = TextEditingController();
   final interestPool = InterestPool();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => startUpJobs());
+  }
+
+  startUpJobs() async {
+    FirebaseUser user = await _auth.currentUser();
+    setState(() {
+      _nameEditController.text = user.displayName;
+    });
+  }
+
   void addToInterestPool() {
     setState(() {
       if (interestPool.interests
           .contains(_interestEditController.text.toLowerCase())) {
         return;
       }
-        interestPool.add(_interestEditController.text.toLowerCase());
+      interestPool.add(_interestEditController.text.toLowerCase());
       _interestEditController.clear();
     });
   }
@@ -96,6 +113,7 @@ class UserConfigPageState extends State<UserConfigPage> {
                             SizedBox(height: 20),
                             TextField(
                               controller: _nameEditController,
+                              textCapitalization: TextCapitalization.sentences,
                               style: TextStyle(
                                 fontFamily: "Quicksand",
                                 fontWeight: FontWeight.w600,
@@ -135,7 +153,7 @@ class UserConfigPageState extends State<UserConfigPage> {
                   // Page 2
                   ListView(
                     physics: BouncingScrollPhysics(),
-                    itemExtent: MediaQuery.of(context).size.height,
+                    itemExtent: MediaQuery.of(context).size.height * 0.7,
                     padding: EdgeInsets.only(left: 30, top: 15),
                     children: <Widget>[
                       Column(
@@ -149,7 +167,7 @@ class UserConfigPageState extends State<UserConfigPage> {
                                 "Tell us about your",
                                 style: TextStyle(
                                   fontFamily: "Quicksand",
-                                  fontSize: 35,
+                                  fontSize: 30,
                                   color: Colors.grey,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -166,6 +184,16 @@ class UserConfigPageState extends State<UserConfigPage> {
                               SizedBox(height: 20),
                               TextField(
                                 onSubmitted: (_) => addToInterestPool(),
+                                onChanged: (value) {
+                                  if (value.endsWith(' ') ||
+                                      value.endsWith(',')) {
+                                    setState(() {
+                                      _interestEditController.text =
+                                          value.substring(0, value.length - 1);
+                                      addToInterestPool();
+                                    });
+                                  }
+                                },
                                 controller: _interestEditController,
                                 style: TextStyle(
                                   fontFamily: "Quicksand",
@@ -198,21 +226,37 @@ class UserConfigPageState extends State<UserConfigPage> {
                                 children: interestPool.interests
                                     .map(
                                       (interest) => TagTextBubble(
-                                    text: interest,
-                                    color: Colors.yellow.shade700,
-                                    tagPool: interestPool,
-                                    parent: this,
-                                  ),
-                                )
+                                        text: interest,
+                                        color: Colors.yellow.shade700,
+                                        tagPool: interestPool,
+                                        parent: this,
+                                      ),
+                                    )
                                     .toList(),
                               ),
                             ],
                           ),
                           RaisedButton(
-                              color: Colors.orangeAccent,
-                              onPressed: () {},
-                              child:
-                              Image.asset("assets/outline_arrow_right.png")),
+                            color: Colors.orangeAccent,
+                            child:
+                                Image.asset("assets/outline_arrow_right.png"),
+                            onPressed: () {
+                              // Check if name is provided
+                              if (_nameEditController.text.trim() == '') {
+                                _pageController.animateToPage(
+                                  0,
+                                  duration: Duration(milliseconds: 800),
+                                  curve: Curves.easeOutExpo,
+                                );
+                                return;
+                              }
+                              //
+                              Navigator.of(context)
+                                  .pushReplacement(MaterialPageRoute(
+                                builder: (context) => MyHomePage(),
+                              ));
+                            },
+                          ),
                         ],
                       ),
                     ],
