@@ -5,12 +5,12 @@
     <link href="https://fonts.googleapis.com/css?family=Righteous&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Jost&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/main.css') }}">
-    <title>API - Elders Social Media</title>
+    <title>API - Storyd</title>
 </head>
 
 <body>
 <h1 style="color: purple; font-family: 'Righteous', cursive">API</h1>
-<h2 style="font-family: 'Jost', sans-serif; color: #33A">Social Media for Elderly</h2>
+<h2 style="font-family: 'Jost', sans-serif; color: #33A">Story - A story based social media.</h2>
 <br>
 <h3 style="font-family: sans-serif; font-weight: 800; color: #73A">JSON</h3>
 <table style="font-family: 'Comfortaa', cursive;">
@@ -44,7 +44,7 @@
             /api/recommend
         </td>
         <td>
-            <b>username</b>: User to get recommended genre<br>
+            <b>uid</b>: unique id of user<br>[user.uid (dart) or user["localToken"] (python)]<br>
             <b>n</b>: To get top n recommended genre
         </td>
         <td>Recommended Story Tags generating API</td>

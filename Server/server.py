@@ -64,16 +64,15 @@ def recommend():
         ]
     }
     """
-    history_collection = db.collection("history")
+    user_info = db.collection("user-data")
     history_parsed = []
-    u_name = ""
+    uid = ""
     top_n = 10
     if request.method == 'POST':
-        u_name = request.form.get("username", "")
+        uid = request.form.get("uid", "")
         top_n = int(request.form.get("n", "10"))
 
-    for past in list(history_collection.where("uname", "==", u_name).stream())[0] \
-            .to_dict()["history"]:
+    for past in user_info.document(uid).get().to_dict()["history"]:
         tag, rating = past.split('~')
         history_parsed.append((tag, float(rating)))
 
