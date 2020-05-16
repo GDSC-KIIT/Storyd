@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
 
-class TextBubble extends StatefulWidget {
-  TextBubble({this.text, this.color});
+class TagTextBubble extends StatefulWidget {
+  TagTextBubble({this.text, this.color, this.tagPool, this.parent});
 
   final String text;
   final Color color;
+  final tagPool;
+  final parent;
 
   @override
   State<StatefulWidget> createState() {
-    return _TextBubbleState();
+    return _TagTextBubbleState();
   }
 }
 
-class _TextBubbleState extends State<TextBubble>
+class _TagTextBubbleState extends State<TagTextBubble>
     with SingleTickerProviderStateMixin {
-  bool active = false;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       child: AnimatedContainer(
-        height: 35,
-        width: (16 * widget.text.length).toDouble(),
+        height: 30,
+        width: (14 * widget.text.length).toDouble(),
         margin: EdgeInsets.all(3),
-        padding: EdgeInsets.all(7),
+        padding: EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: active ? widget.color : Colors.grey.shade200,
+          color: Colors.grey.shade300,
           borderRadius: BorderRadius.circular(20),
         ),
         duration: Duration(milliseconds: 200),
@@ -33,15 +34,16 @@ class _TextBubbleState extends State<TextBubble>
           child: Text(
             widget.text,
             style: TextStyle(
-                fontSize: 16,
-                fontFamily: "Quicksand",
-                fontWeight: FontWeight.w600),
+              fontSize: 14,
+              fontFamily: "Quicksand",
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
       onTap: () {
-        setState(() {
-          active = !active;
+        widget.parent.setState(() {
+          widget.tagPool.remove(widget.text);
         });
       },
     );

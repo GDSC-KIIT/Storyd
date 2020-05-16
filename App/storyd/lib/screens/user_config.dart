@@ -1,12 +1,42 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:storyd/global_values.dart';
 import 'package:storyd/screens/special_widgets.dart';
 
-class UserConfigPage extends StatelessWidget {
+class InterestPool {
+  List<String> interests = [];
+
+  void remove(String interest) {
+    interests.removeWhere((element) => element == interest);
+  }
+
+  void add(String interest) {
+    interests.insert(0, interest);
+  }
+}
+
+class UserConfigPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return UserConfigPageState();
+  }
+}
+
+class UserConfigPageState extends State<UserConfigPage> {
   final PageController _pageController = PageController();
   final TextEditingController _nameEditController = TextEditingController();
   final TextEditingController _interestEditController = TextEditingController();
+  final interestPool = InterestPool();
+
+  void addToInterestPool() {
+    setState(() {
+      if (interestPool.interests
+          .contains(_interestEditController.text.toLowerCase())) {
+        return;
+      }
+        interestPool.add(_interestEditController.text.toLowerCase());
+      _interestEditController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,53 +133,89 @@ class UserConfigPage extends StatelessWidget {
                     ),
                   ),
                   // Page 2
-                  Padding(
-                    padding: EdgeInsets.only(left: 30),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              "Tell us about your",
-                              style: TextStyle(
-                                fontFamily: "Quicksand",
-                                fontSize: 35,
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              "interests",
-                              style: TextStyle(
-                                fontFamily: "Quicksand",
-                                fontSize: 35,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            SizedBox(height: 20),
-                            Wrap(
-                              children: interestsCollection
-                                  .map(
-                                    (interest) => TextBubble(
-                                  text: interest,
-                                  color: Colors.yellow.shade700,
+                  ListView(
+                    physics: BouncingScrollPhysics(),
+                    itemExtent: MediaQuery.of(context).size.height,
+                    padding: EdgeInsets.only(left: 30, top: 15),
+                    children: <Widget>[
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Tell us about your",
+                                style: TextStyle(
+                                  fontFamily: "Quicksand",
+                                  fontSize: 35,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                              )
-                                  .toList(),
-                            ),
-                          ],
-                        ),
-                        RaisedButton(
-                            color: Colors.orangeAccent,
-                            onPressed: () {},
-                            child:
-                                Image.asset("assets/outline_arrow_right.png")),
-                      ],
-                    ),
+                              ),
+                              Text(
+                                "interests",
+                                style: TextStyle(
+                                  fontFamily: "Quicksand",
+                                  fontSize: 35,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              TextField(
+                                onSubmitted: (_) => addToInterestPool(),
+                                controller: _interestEditController,
+                                style: TextStyle(
+                                  fontFamily: "Quicksand",
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 24,
+                                  color: Colors.black,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: "e.g. music, sports, ...",
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  suffixIcon: GestureDetector(
+                                    child: Icon(
+                                      Icons.arrow_forward,
+                                      size: 30,
+                                    ),
+                                    onTap: addToInterestPool,
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      width: 2,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 7),
+                              Wrap(
+                                children: interestPool.interests
+                                    .map(
+                                      (interest) => TagTextBubble(
+                                    text: interest,
+                                    color: Colors.yellow.shade700,
+                                    tagPool: interestPool,
+                                    parent: this,
+                                  ),
+                                )
+                                    .toList(),
+                              ),
+                            ],
+                          ),
+                          RaisedButton(
+                              color: Colors.orangeAccent,
+                              onPressed: () {},
+                              child:
+                              Image.asset("assets/outline_arrow_right.png")),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
