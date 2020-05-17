@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:storyd/global_values.dart';
 import 'package:storyd/screens/home.dart';
 import 'package:storyd/screens/special_widgets.dart';
 
@@ -29,7 +32,8 @@ class UserConfigPageState extends State<UserConfigPage> {
   final TextEditingController _interestEditController = TextEditingController();
   final interestPool = InterestPool();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
 
   @override
   void initState() {
@@ -38,7 +42,7 @@ class UserConfigPageState extends State<UserConfigPage> {
   }
 
   startUpJobs() async {
-    FirebaseUser user = await _auth.currentUser();
+    user = await _auth.currentUser();
     setState(() {
       _nameEditController.text = user.displayName;
     });
@@ -240,7 +244,7 @@ class UserConfigPageState extends State<UserConfigPage> {
                             color: Colors.orangeAccent,
                             child:
                                 Image.asset("assets/outline_arrow_right.png"),
-                            onPressed: () {
+                            onPressed: () async {
                               // Check if name is provided
                               if (_nameEditController.text.trim() == '') {
                                 _pageController.animateToPage(
@@ -251,6 +255,24 @@ class UserConfigPageState extends State<UserConfigPage> {
                                 return;
                               }
                               //
+
+                              DocumentReference userRef = Firestore.instance
+                                  .collection("user-data")
+                                  .document(user.uid);
+                              Firestore.instance
+                                  .runTransaction((transaction) async {
+                                await transaction
+                                    .set(userRef, <String, dynamic>{
+                                  'preferredTopics': interestPool.interests,
+                                  'name': _nameEditController.text,
+                                  'history': [],
+                                });
+                              });
+
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                              prefs.setBool(isLoggedInPrefKey, true);
+
                               Navigator.of(context)
                                   .pushReplacement(MaterialPageRoute(
                                 builder: (context) => MyHomePage(),

@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:storyd/global_values.dart';
 import 'package:storyd/screens/auth.dart';
+import 'package:storyd/screens/home.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -12,13 +15,20 @@ class SplashScreen extends StatefulWidget {
 class SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
-    Timer(Duration(milliseconds: 1800), () {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => LoginPage(),
-          transitionDuration: Duration(milliseconds: 600),
-        ),
-      );
+    Timer(Duration(milliseconds: 1800), () async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(isLoggedInPrefKey) == true) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MyHomePage()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => LoginPage(),
+            transitionDuration: Duration(milliseconds: 1000),
+          ),
+        );
+      }
     });
   }
 

@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:storyd/screens/home.dart';
 import 'package:storyd/screens/landing.dart';
 
 class LoginPage extends StatefulWidget {
@@ -30,11 +32,24 @@ class LoginPageState extends State<LoginPage>
         accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
 
     FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (BuildContext context) => LandingPage(),
-      ),
-    );
+    DocumentSnapshot userDataSnapshot = await (Firestore.instance
+            .collection("user-data")
+            .document(user.uid)
+            .get());
+
+    if (!userDataSnapshot.exists) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (BuildContext context) => LandingPage(),
+        ),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (BuildContext context) => MyHomePage(),
+        ),
+      );
+    }
   }
 
   @override
