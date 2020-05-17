@@ -50,14 +50,14 @@ def recommend():
     Example of a Firestore history db structure for 2 users:
 
     5ebd5ea683eb5b356d5c467e => {
-        "uname" : "alphanikhil",
+        "name": "Nikhil Nayak"
         "history" : [
             "Action~5",
             "Thriller~4"
         ]
     }
     fsd32fr283eb5b3daf5c467f => {
-        "uname" : "sherlock",
+        "uname" : "John Doe",
         "history" : [
             "Action~3",
             "Fantasy~5"
