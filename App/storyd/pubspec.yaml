@@ -21,6 +21,8 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  http:
+  cached_network_image:
   shared_preferences:
   cloud_firestore:
   firebase_auth:

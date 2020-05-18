@@ -140,17 +140,21 @@ class UserConfigPageState extends State<UserConfigPage> {
                           ],
                         ),
                         RaisedButton(
-                            color: Colors.orangeAccent,
-                            onPressed: () {
-                              FocusScope.of(context).unfocus();
-                              _pageController.animateToPage(
-                                1,
-                                duration: Duration(milliseconds: 800),
-                                curve: Curves.easeOutExpo,
-                              );
-                            },
-                            child:
-                                Image.asset("assets/outline_arrow_right.png")),
+                          color: Colors.orangeAccent,
+                          onPressed: () {
+                            FocusScope.of(context).unfocus();
+                            _pageController.animateToPage(
+                              1,
+                              duration: Duration(milliseconds: 800),
+                              curve: Curves.easeOutExpo,
+                            );
+                          },
+                          child: Icon(
+                            Icons.trending_flat,
+                            color: Colors.white,
+                            size: 35,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -242,8 +246,11 @@ class UserConfigPageState extends State<UserConfigPage> {
                           ),
                           RaisedButton(
                             color: Colors.orangeAccent,
-                            child:
-                                Image.asset("assets/outline_arrow_right.png"),
+                            child: Icon(
+                              Icons.trending_flat,
+                              color: Colors.white,
+                              size: 35,
+                            ),
                             onPressed: () async {
                               // Check if name is provided
                               if (_nameEditController.text.trim() == '') {
@@ -265,7 +272,7 @@ class UserConfigPageState extends State<UserConfigPage> {
                                     .set(userRef, <String, dynamic>{
                                   'preferredTopics': interestPool.interests,
                                   'name': _nameEditController.text,
-                                  'history': [],
+                                  'avatar-url': user.photoUrl,
                                 });
                               });
 
