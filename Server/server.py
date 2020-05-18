@@ -1,6 +1,14 @@
+"""
+Requirements:
+    Python 3.7+
+"""
+
 import os
+import time
+from itertools import combinations
+
 from google.cloud import firestore
-from flask import Flask, jsonify, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request, url_for, Response
 from function_pool import KeyWordGenerator, SentimentDetector, RecommendationEngine
 
 app = Flask(__name__)
@@ -46,37 +54,28 @@ def keywords():
 
 @app.route('/api/recommend', methods=['POST'])
 def recommend():
-    """
-    Example of a Firestore history db structure for 2 users:
-
-    5ebd5ea683eb5b356d5c467e => {
-        "name": "Nikhil Nayak"
-        "history" : [
-            "Action~5",
-            "Thriller~4"
-        ]
-    }
-    fsd32fr283eb5b3daf5c467f => {
-        "uname" : "John Doe",
-        "history" : [
-            "Action~3",
-            "Fantasy~5"
-        ]
-    }
-    """
     user_info = db.collection("user-data")
-    history_parsed = []
+    story_collection = db.collection("story-collection")
     uid = ""
-    top_n = 10
+
     if request.method == 'POST':
         uid = request.form.get("uid", "")
-        top_n = int(request.form.get("n", "10"))
 
-    for past in user_info.document(uid).get().to_dict()["history"]:
-        tag, rating = past.split('~')
-        history_parsed.append((tag, float(rating)))
+    recommends = list()
 
-    recommends = recommendationEngine.recommend_genres(history_parsed)[:top_n]
+    preferred_topics = user_info.document(uid).get().to_dict()["preferredTopics"]
+    most_recommended_posts = list()
+    for n in range(3, 0, -1):
+        for tags in combinations(preferred_topics, n):
+            most_recommended_posts = set(story_collection.where("topics", "array_contains", tags[0]).stream())
+
+            for tag in tags[1:]:
+                most_recommended_posts &= set(story_collection.where("topics", "array_contains", tag).stream())
+
+        for story in most_recommended_posts:
+            if story.id not in recommends:
+                recommends.append(story.id)
+
     return jsonify({
         "recommends": recommends,
     })
