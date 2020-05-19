@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -141,6 +142,7 @@ class _StoryTileState extends State<StoryTile> {
       body = "",
       timeSince = "",
       avatarUrl = "",
+      imageName = "",
       imageUrl = "";
 
   @override
@@ -148,6 +150,7 @@ class _StoryTileState extends State<StoryTile> {
     authorUid = widget.data["author-uid"];
     title = widget.data["title"];
     body = widget.data["body"];
+    imageName = widget.data["image-name"];
     List activeSince = widget.data["up_since"];
     DateTime timeNow = DateTime.now();
     DateTime activeSinceDT = DateTime(activeSince[0], activeSince[1],
@@ -196,6 +199,18 @@ class _StoryTileState extends State<StoryTile> {
       });
     });
 
+    if (imageName != "") {
+      FirebaseStorage.instance
+          .ref()
+          .child("story-images/$imageName")
+          .getDownloadURL()
+          .then((value) {
+        setState(() {
+          imageUrl = value;
+        });
+      });
+    }
+
     super.initState();
   }
 
@@ -217,15 +232,14 @@ class _StoryTileState extends State<StoryTile> {
                   child: avatarUrl != ""
                       ? CachedNetworkImage(
                           imageUrl: avatarUrl,
-                          placeholder: (context, url) =>
-                              SizedBox(
-                                height: 20,
-                                width: 10,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  backgroundColor: Colors.grey,
-                                ),
-                              ),
+                          placeholder: (context, url) => SizedBox(
+                            height: 20,
+                            width: 10,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              backgroundColor: Colors.grey,
+                            ),
+                          ),
                         )
                       : Container(),
                 ),
@@ -242,6 +256,7 @@ class _StoryTileState extends State<StoryTile> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  SizedBox(height: 4),
                   Text(
                     timeSince,
                     style: TextStyle(
@@ -256,7 +271,27 @@ class _StoryTileState extends State<StoryTile> {
             ],
           ),
           SizedBox(height: 14),
-          (imageUrl != "") ? Image.network(imageUrl) : Container(),
+          (imageUrl != "")
+              ? ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              progressIndicatorBuilder: (context, url, progress) =>
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Center(
+                      child:
+                      CircularProgressIndicator(value: progress.progress),
+                    ),
+                  ),
+            ),
+          )
+              : imageName != "" ? Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.3,
+          ) : Container(),
+          SizedBox(height: 7),
           Text(
             title,
             style: TextStyle(
@@ -266,7 +301,7 @@ class _StoryTileState extends State<StoryTile> {
             ),
           ),
           SizedBox(height: 7),
-          (imageUrl == "")
+          (imageName == "")
               ? Text(
                   body,
                   overflow: TextOverflow.ellipsis,
