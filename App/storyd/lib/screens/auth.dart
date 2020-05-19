@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:storyd/global_values.dart';
 import 'package:storyd/screens/home.dart';
 import 'package:storyd/screens/landing.dart';
 
@@ -35,6 +37,10 @@ class LoginPageState extends State<LoginPage>
             .collection("user-data")
             .document(user.uid)
             .get());
+
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool(isLoggedInPrefKey, true);
+    });
 
     if (!userDataSnapshot.exists) {
       Navigator.of(context).pushReplacement(
