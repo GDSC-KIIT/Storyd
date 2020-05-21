@@ -125,9 +125,10 @@ class _HomePageSearchBarState extends State<HomePageSearchBar> {
 }
 
 class StoryTile extends StatefulWidget {
-  StoryTile({this.data});
+  StoryTile({this.data, this.currentUser});
 
   final data;
+  final FirebaseUser currentUser;
 
   @override
   State<StatefulWidget> createState() {
@@ -143,7 +144,12 @@ class _StoryTileState extends State<StoryTile> {
       timeSince = "",
       avatarUrl = "",
       imageName = "",
-      imageUrl = "";
+      imageUrl = "",
+      documentId = "";
+
+  List likedByPeople = [];
+
+  bool isLiked;
 
   @override
   void initState() {
@@ -151,6 +157,9 @@ class _StoryTileState extends State<StoryTile> {
     title = widget.data["title"];
     body = widget.data["body"];
     imageName = widget.data["image-name"];
+    likedByPeople = widget.data["liked-by-people"];
+    documentId = widget.data["id"];
+    isLiked = likedByPeople.contains(widget.currentUser.uid);
     List activeSince = widget.data["up_since"];
     DateTime timeNow = DateTime.now();
     DateTime activeSinceDT = DateTime(activeSince[0], activeSince[1],
@@ -237,7 +246,7 @@ class _StoryTileState extends State<StoryTile> {
                             height: 20,
                             width: 10,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                              strokeWidth: 4,
                               backgroundColor: Colors.grey,
                             ),
                           ),
@@ -317,6 +326,57 @@ class _StoryTileState extends State<StoryTile> {
                   ),
                 )
               : Container(),
+          SizedBox(height: 13),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.30,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                GestureDetector(
+                  child: Image.asset(
+                    isLiked ? "assets/like_fill.png" : "assets/like.png",
+                    width: 25,
+                    height: 25,
+                  ),
+                  onTap: () async {
+                    DocumentReference postRef = Firestore.instance
+                        .collection("story-collection")
+                        .document(documentId);
+
+                    if (likedByPeople.contains(widget.currentUser.uid)) {
+                      setState(() {
+                        isLiked = false;
+                      });
+                      likedByPeople =
+                          (await postRef.get()).data["liked-by-people"];
+
+                      setState(() {
+                        likedByPeople.remove(widget.currentUser.uid);
+                      });
+                    } else {
+                      setState(() {
+                        isLiked = true;
+                      });
+                      likedByPeople =
+                          (await postRef.get()).data["liked-by-people"];
+                      setState(() {
+                        likedByPeople.add(widget.currentUser.uid);
+                      });
+                    }
+                    Firestore.instance.runTransaction((transaction) async {
+                      await transaction.update(postRef, {
+                        "liked-by-people": likedByPeople,
+                      });
+                    });
+                  },
+                ),
+                Image.asset("assets/comment.png", width: 25, height: 25),
+                Image.asset("assets/share.png", width: 25, height: 25),
+              ],
+            ),
+          ),
+          SizedBox(height: 7),
+          Text("${likedByPeople.length} likes"),
         ],
       ),
     );

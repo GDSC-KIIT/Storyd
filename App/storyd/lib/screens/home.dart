@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:storyd/screens/special_widgets.dart';
@@ -10,6 +11,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  FirebaseUser user;
+
+  @override
+  void initState() {
+    FirebaseAuth.instance.currentUser().then((value) {
+      user = value;
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,6 +34,15 @@ class _MyHomePageState extends State<MyHomePage> {
               .orderBy("up_since", descending: true)
               .snapshots(),
           builder: (context, snapshot) {
+            if (user == null) {
+              return Center(
+                child: SizedBox(
+                  height: 80,
+                  width: 80,
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
               case ConnectionState.none:
@@ -40,7 +61,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (index == 0) {
                       return HomePageSearchBar();
                     }
-                    return StoryTile(data: snapshot.data.documents[index-1]);
+
+                    return StoryTile(
+                      data: snapshot.data.documents[index - 1],
+                      currentUser: user,
+                    );
                   },
                 );
             }

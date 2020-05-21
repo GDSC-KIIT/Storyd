@@ -492,9 +492,13 @@ class UserConfigPageState extends State<UserConfigPage> {
                             SizedBox(
                               height: 20,
                               width: 20,
-                              child: savingConfigData ? CircularProgressIndicator(
-                                valueColor: new AlwaysStoppedAnimation<Color>(Colors.black),
-                              ) : Container(),
+                              child: savingConfigData
+                                  ? CircularProgressIndicator(
+                                      valueColor:
+                                          new AlwaysStoppedAnimation<Color>(
+                                              Colors.black),
+                                    )
+                                  : Container(),
                             ),
                           ],
                         ),

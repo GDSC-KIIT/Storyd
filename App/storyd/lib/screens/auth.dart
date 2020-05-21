@@ -34,9 +34,9 @@ class LoginPageState extends State<LoginPage>
 
     FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
     DocumentSnapshot userDataSnapshot = await (Firestore.instance
-            .collection("user-data")
-            .document(user.uid)
-            .get());
+        .collection("user-data")
+        .document(user.uid)
+        .get());
 
     if (!userDataSnapshot.exists) {
       Navigator.of(context).pushReplacement(
@@ -45,6 +45,8 @@ class LoginPageState extends State<LoginPage>
         ),
       );
     } else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool(isLoggedInPrefKey, true);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (BuildContext context) => MyHomePage(),

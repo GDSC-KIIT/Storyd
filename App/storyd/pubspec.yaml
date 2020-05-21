@@ -58,8 +58,10 @@ flutter:
     - assets/storyd-landing.png
     - assets/avatar.png
     - assets/googleLogo.png
-    - assets/outline_arrow_right.png
-
+    - assets/like.png
+    - assets/like_fill.png
+    - assets/comment.png
+    - assets/share.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
