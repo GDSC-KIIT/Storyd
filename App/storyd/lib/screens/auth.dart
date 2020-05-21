@@ -38,10 +38,6 @@ class LoginPageState extends State<LoginPage>
             .document(user.uid)
             .get());
 
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setBool(isLoggedInPrefKey, true);
-    });
-
     if (!userDataSnapshot.exists) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

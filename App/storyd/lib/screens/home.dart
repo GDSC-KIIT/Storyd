@@ -51,4 +51,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class BottomNavigationBar extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _BottomNavigationBarState();
+  }
+}
 
+class _BottomNavigationBarState extends State<BottomNavigationBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Row(
+          children: <Widget>[],
+        ),
+      ),
+    );
+  }
+}

@@ -232,6 +232,7 @@ class _StoryTileState extends State<StoryTile> {
                   child: avatarUrl != ""
                       ? CachedNetworkImage(
                           imageUrl: avatarUrl,
+                          fit: BoxFit.cover,
                           placeholder: (context, url) => SizedBox(
                             height: 20,
                             width: 10,
@@ -241,7 +242,7 @@ class _StoryTileState extends State<StoryTile> {
                             ),
                           ),
                         )
-                      : Container(),
+                      : Image.asset("assets/avatar.png"),
                 ),
               ),
               SizedBox(width: 10),
@@ -273,24 +274,26 @@ class _StoryTileState extends State<StoryTile> {
           SizedBox(height: 14),
           (imageUrl != "")
               ? ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              progressIndicatorBuilder: (context, url, progress) =>
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.3,
-                    child: Center(
-                      child:
-                      CircularProgressIndicator(value: progress.progress),
+                  borderRadius: BorderRadius.circular(14),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    progressIndicatorBuilder: (context, url, progress) =>
+                        SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      child: Center(
+                        child:
+                            CircularProgressIndicator(value: progress.progress),
+                      ),
                     ),
                   ),
-            ),
-          )
-              : imageName != "" ? Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.3,
-          ) : Container(),
+                )
+              : imageName != ""
+                  ? Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.3,
+                    )
+                  : Container(),
           SizedBox(height: 7),
           Text(
             title,
@@ -307,10 +310,11 @@ class _StoryTileState extends State<StoryTile> {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 4,
                   style: TextStyle(
-                      fontFamily: "CircularStd",
-                      fontSize: 17,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.blueGrey.shade700),
+                    fontFamily: "CircularStd",
+                    fontSize: 17,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blueGrey.shade700,
+                  ),
                 )
               : Container(),
         ],

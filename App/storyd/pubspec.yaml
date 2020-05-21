@@ -23,6 +23,7 @@ environment:
 dependencies:
   http:
   cached_network_image:
+  image_picker:
   shared_preferences:
   cloud_firestore:
   firebase_storage:
@@ -55,6 +56,7 @@ flutter:
   assets:
     - assets/storyd-splash.png
     - assets/storyd-landing.png
+    - assets/avatar.png
     - assets/googleLogo.png
     - assets/outline_arrow_right.png
 
