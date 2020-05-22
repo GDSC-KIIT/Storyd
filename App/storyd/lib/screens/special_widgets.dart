@@ -65,7 +65,7 @@ class _HomePageSearchBarState extends State<HomePageSearchBar> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.35,
+      height: MediaQuery.of(context).size.height * 0.30,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -370,8 +370,19 @@ class _StoryTileState extends State<StoryTile> {
                     });
                   },
                 ),
-                Image.asset("assets/comment.png", width: 25, height: 25),
-                Image.asset("assets/share.png", width: 25, height: 25),
+                GestureDetector(
+                  child:
+                      Image.asset("assets/comment.png", width: 25, height: 25),
+                  onTap: () {
+                    // TODO: Adding comment section.
+                  },
+                ),
+                GestureDetector(
+                  child: Image.asset("assets/share.png", width: 25, height: 25),
+                  onTap: () {
+                    // TODO: After friend section is done, sharing feature will be added.
+                  },
+                ),
               ],
             ),
           ),
