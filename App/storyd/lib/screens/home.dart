@@ -61,6 +61,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   default:
                     return ListView.builder(
+                      cacheExtent: MediaQuery.of(context).size.height *
+                          4, // Equivalent to 4 page caching/
                       physics: BouncingScrollPhysics(),
                       itemCount: snapshot.data.documents.length + 2,
                       // +2 for SearchBar and BottomEmptyBlock
