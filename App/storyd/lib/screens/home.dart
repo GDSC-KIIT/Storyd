@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:storyd/screens/create_post.dart';
 import 'package:storyd/screens/special_widgets.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -36,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: StreamBuilder(
               stream: Firestore.instance
                   .collection('story-collection')
-                  .orderBy("up_since", descending: true)
+                  .orderBy("up-since", descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (user == null) {
@@ -80,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
           ),
-          BottomNavigationBar(currentUser: user),
+          BottomNavigationBar(currentUser: user, homeState: this),
         ],
       ),
     );
@@ -88,8 +89,9 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class BottomNavigationBar extends StatefulWidget {
-  BottomNavigationBar({this.currentUser});
+  BottomNavigationBar({this.currentUser, this.homeState});
 
+  final State homeState;
   final FirebaseUser currentUser;
 
   @override
@@ -114,29 +116,51 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            Icon(Icons.home),
-            Icon(Icons.people_outline),
-            Container(
-              height: 45,
-              width: 45,
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(100, 190, 255, 1),
-                borderRadius: BorderRadius.circular(35),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.7),
-                    blurRadius: 20,
-                    spreadRadius: 0.2,
+            // Home
+            Icon(Icons.home, color: Colors.blueGrey.shade300),
+            // Friends
+            Icon(Icons.people_outline, color: Colors.blueGrey.shade300),
+            // Add post
+            GestureDetector(
+              child: Container(
+                height: 45,
+                width: 45,
+                decoration: BoxDecoration(
+                  color: Color.fromRGBO(100, 190, 255, 1),
+                  borderRadius: BorderRadius.circular(35),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.7),
+                      blurRadius: 33,
+                      spreadRadius: 0.1,
+                    ),
+                  ],
+                  border: Border.all(
+                    width: 5,
+                    color: Colors.white,
                   ),
-                ],
-                border: Border.all(
-                  width: 5,
+                ),
+                child: Icon(
+                  Icons.add,
                   color: Colors.white,
+                  size: 33,
                 ),
               ),
-              child: Icon(Icons.add, color: Colors.white, size: 33,),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => NewPostField(
+                      avatarUrl: avatarUrl,
+                      currentUser: widget.currentUser,
+                      homeState: widget.homeState,
+                    ),
+                  ),
+                );
+              },
             ),
-            Icon(Icons.chat_bubble_outline),
+            // Direct Messages
+            Icon(Icons.chat_bubble_outline, color: Colors.blueGrey.shade300),
+            // Profile
             SizedBox(
               height: 25,
               width: 25,

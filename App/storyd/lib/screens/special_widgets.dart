@@ -160,7 +160,7 @@ class _StoryTileState extends State<StoryTile> {
     likedByPeople = widget.data["liked-by-people"];
     documentId = widget.data["id"];
     isLiked = likedByPeople.contains(widget.currentUser.uid);
-    List activeSince = widget.data["up_since"];
+    List activeSince = widget.data["up-since"];
     DateTime timeNow = DateTime.now();
     DateTime activeSinceDT = DateTime(activeSince[0], activeSince[1],
         activeSince[2], activeSince[3], activeSince[4]);
@@ -261,9 +261,9 @@ class _StoryTileState extends State<StoryTile> {
                   Text(
                     author,
                     style: TextStyle(
-                      fontFamily: "Quicksand",
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontFamily: "CircularStd",
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   SizedBox(height: 4),
