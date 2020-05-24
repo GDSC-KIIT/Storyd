@@ -109,7 +109,9 @@ class NewPostFieldState extends State<NewPostField> {
                 });
                 var documentId = uuid.v1();
                 var currentDate = DateTime.now();
-                var imageName = "image_${uuid.v1()}.png";
+
+                var imageName =
+                    postImage != null ? "image_${uuid.v1()}.png" : "";
                 await Firestore.instance
                     .collection("story-collection")
                     .document(documentId)
@@ -130,13 +132,16 @@ class NewPostFieldState extends State<NewPostField> {
                   ],
                 });
 
-                StorageReference reference = FirebaseStorage.instance
-                    .ref()
-                    .child("story-images/$imageName");
+                if (postImage != null) {
+                  StorageReference reference = FirebaseStorage.instance
+                      .ref()
+                      .child("story-images/$imageName");
 
-                StorageUploadTask uploadTask = reference.putFile(postImage);
+                  StorageUploadTask uploadTask = reference.putFile(postImage);
 
-                await uploadTask.onComplete;
+                  await uploadTask.onComplete;
+                }
+
                 widget.homeState.setState(() {});
                 Navigator.of(context).pop();
               }
@@ -173,10 +178,10 @@ class NewPostFieldState extends State<NewPostField> {
                     width: 30,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(17.5),
-                      child: CachedNetworkImage(
+                      child: widget.avatarUrl != null ? CachedNetworkImage(
                         imageUrl: widget.avatarUrl,
                         fit: BoxFit.cover,
-                      ),
+                      ) : Container(),
                     ),
                   ),
                   SizedBox(width: 15),
@@ -229,10 +234,10 @@ class NewPostFieldState extends State<NewPostField> {
                         width: 30,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(17.5),
-                          child: CachedNetworkImage(
+                          child: widget.avatarUrl != null ? CachedNetworkImage(
                             imageUrl: widget.avatarUrl,
                             fit: BoxFit.cover,
-                          ),
+                          ) : Container(),
                         ),
                       ),
                       SizedBox(width: 15),

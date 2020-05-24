@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:storyd/screens/create_post.dart';
 import 'package:storyd/screens/special_widgets.dart';
 
@@ -14,6 +15,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   FirebaseUser user;
+  int homePageIndex = 0;
 
   @override
   void initState() {
@@ -26,64 +28,99 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
+  void changeHomePageSlot(int index) {
+    setState(() {
+      homePageIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(left: 24, right: 24),
-            child: StreamBuilder(
-              stream: Firestore.instance
-                  .collection('story-collection')
-                  .orderBy("up-since", descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (user == null) {
-                  return Center(
-                    child: SizedBox(
-                      height: 80,
-                      width: 80,
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                  case ConnectionState.none:
-                    return Center(
-                      child: SizedBox(
-                        height: 80,
-                        width: 80,
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  default:
-                    return ListView.builder(
-                      cacheExtent: MediaQuery.of(context).size.height *
-                          4, // Equivalent to 4 page caching/
-                      physics: BouncingScrollPhysics(),
-                      itemCount: snapshot.data.documents.length + 2,
-                      // +2 for SearchBar and BottomEmptyBlock
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return HomePageSearchBar();
-                        } else if (index ==
-                            snapshot.data.documents.length + 1) {
-                          return SizedBox(height: 70);
-                        }
-                        return StoryTile(
-                          data: snapshot.data.documents[index - 1],
-                          currentUser: user,
+          AnimatedSwitcher(
+            duration: Duration(milliseconds: 200),
+            child: IndexedStack(
+              key: ValueKey<int>(homePageIndex),
+              index: homePageIndex,
+              children: [
+                // Home - 0
+                Padding(
+                  padding: EdgeInsets.only(left: 24, right: 24),
+                  child: StreamBuilder(
+                    stream: Firestore.instance
+                        .collection('story-collection')
+                        .orderBy("up-since", descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (user == null) {
+                        return Center(
+                          child: SizedBox(
+                            height: 80,
+                            width: 80,
+                            child: CircularProgressIndicator(),
+                          ),
                         );
-                      },
-                    );
-                }
-              },
+                      }
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                          return Center(
+                            child: SizedBox(
+                              height: 80,
+                              width: 80,
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        default:
+                          return ListView.builder(
+                            cacheExtent: MediaQuery.of(context).size.height *
+                                4, // Equivalent to 4 page caching/
+                            physics: BouncingScrollPhysics(),
+                            itemCount: snapshot.data.documents.length + 2,
+                            // +2 for SearchBar and BottomEmptyBlock
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return HomePageSearchBar();
+                              } else if (index ==
+                                  snapshot.data.documents.length + 1) {
+                                return SizedBox(height: 70);
+                              }
+
+                              return StoryTile(
+                                data: snapshot.data.documents[index - 1],
+                                currentUser: user,
+                              );
+                            },
+                          );
+                      }
+                    },
+                  ),
+                ),
+                // Friends - 1
+                Center(
+                  child: Text("Friends"),
+                ),
+                // Direct Messages - 2
+                Center(
+                  child: Text("Direct Messages"),
+                ),
+                // Profile - 3
+                Center(
+                  child: Text("Profile"),
+                ),
+              ],
             ),
           ),
-          BottomNavigationBar(currentUser: user, homeState: this),
+          BottomNavigationBar(
+            currentUser: user,
+            homeState: this,
+            onBottomBarAction: (int pageIndex) {
+              changeHomePageSlot(pageIndex);
+            },
+          ),
         ],
       ),
     );
@@ -91,10 +128,14 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class BottomNavigationBar extends StatefulWidget {
-  BottomNavigationBar({this.currentUser, this.homeState});
+  BottomNavigationBar(
+      {@required this.currentUser,
+      @required this.homeState,
+      this.onBottomBarAction});
 
   final State homeState;
   final FirebaseUser currentUser;
+  final Function(int) onBottomBarAction;
 
   @override
   State<StatefulWidget> createState() {
@@ -104,6 +145,7 @@ class BottomNavigationBar extends StatefulWidget {
 
 class _BottomNavigationBarState extends State<BottomNavigationBar> {
   String avatarUrl;
+  int activeSelectionIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -119,9 +161,31 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             // Home
-            Icon(Icons.home, color: Colors.blueGrey.shade300),
+            GestureDetector(
+              child: Icon(Icons.home,
+                  color: activeSelectionIndex == 0
+                      ? Colors.black
+                      : Colors.blueGrey.shade300),
+              onTap: () {
+                setState(() {
+                  activeSelectionIndex = 0;
+                });
+                widget.onBottomBarAction(0);
+              },
+            ),
             // Friends
-            Icon(Icons.people_outline, color: Colors.blueGrey.shade300),
+            GestureDetector(
+              child: Icon(Icons.people_outline,
+                  color: activeSelectionIndex == 1
+                      ? Colors.black
+                      : Colors.blueGrey.shade300),
+              onTap: () {
+                setState(() {
+                  activeSelectionIndex = 1;
+                });
+                widget.onBottomBarAction(1);
+              },
+            ),
             // Add post
             GestureDetector(
               child: Container(
@@ -161,35 +225,74 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> {
               },
             ),
             // Direct Messages
-            Icon(Icons.chat_bubble_outline, color: Colors.blueGrey.shade300),
-            // Profile
-            SizedBox(
-              height: 25,
-              width: 25,
-              child: Builder(builder: (context) {
-                if (widget.currentUser == null) {
-                  return Container();
-                }
-                Firestore.instance
-                    .collection("user-data")
-                    .document(widget.currentUser.uid)
-                    .get()
-                    .then((ds) {
-                  setState(() {
-                    avatarUrl = ds.data["avatar-url"];
-                  });
+            GestureDetector(
+              child: Icon(Icons.chat_bubble_outline,
+                  color: activeSelectionIndex == 2
+                      ? Colors.black
+                      : Colors.blueGrey.shade300),
+              onTap: () {
+                setState(() {
+                  activeSelectionIndex = 2;
                 });
+                widget.onBottomBarAction(2);
+              },
+            ),
+            // Profile
+            GestureDetector(
+              child: Container(
+                height: 33,
+                width: 33,
+                decoration: BoxDecoration(
+                  color: activeSelectionIndex == 3
+                      ? Colors.black
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    height: 30,
+                    width: 30,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        width: 3,
+                        color: Colors.white,
+                      ),
+                    ),
+                    child: Builder(builder: (context) {
+                      if (widget.currentUser == null) {
+                        return Container();
+                      }
+                      Firestore.instance
+                          .collection("user-data")
+                          .document(widget.currentUser.uid)
+                          .get()
+                          .then((ds) {
+                        setState(() {
+                          avatarUrl = ds.data["avatar-url"];
+                        });
+                      });
 
-                return avatarUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12.5),
-                        child: CachedNetworkImage(
-                          fit: BoxFit.cover,
-                          imageUrl: avatarUrl,
-                        ),
-                      )
-                    : Container();
-              }),
+                      return avatarUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12.5),
+                              child: CachedNetworkImage(
+                                fit: BoxFit.cover,
+                                imageUrl: avatarUrl,
+                              ),
+                            )
+                          : Container();
+                    }),
+                  ),
+                ),
+              ),
+              onTap: () {
+                setState(() {
+                  activeSelectionIndex = 3;
+                });
+                widget.onBottomBarAction(3);
+              },
             ),
           ],
         ),
