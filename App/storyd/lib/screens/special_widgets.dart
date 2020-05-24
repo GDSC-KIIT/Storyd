@@ -225,169 +225,378 @@ class _StoryTileState extends State<StoryTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 45),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: avatarUrl != ""
-                      ? CachedNetworkImage(
-                          imageUrl: avatarUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => SizedBox(
-                            height: 20,
-                            width: 10,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 4,
-                              backgroundColor: Colors.grey,
+    return GestureDetector(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 45),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: avatarUrl != ""
+                        ? CachedNetworkImage(
+                            imageUrl: avatarUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => SizedBox(
+                              height: 20,
+                              width: 10,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 4,
+                                backgroundColor: Colors.grey,
+                              ),
                             ),
-                          ),
-                        )
-                      : Image.asset("assets/avatar.png"),
+                          )
+                        : Image.asset("assets/avatar.png"),
+                  ),
                 ),
-              ),
-              SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    author,
-                    style: TextStyle(
-                      fontFamily: "CircularStd",
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    timeSince,
-                    style: TextStyle(
-                      fontFamily: "Quicksand",
-                      fontSize: 14,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 14),
-          (imageUrl != "")
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    progressIndicatorBuilder: (context, url, progress) =>
-                        SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.3,
-                      child: Center(
-                        child:
-                            CircularProgressIndicator(value: progress.progress),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      author,
+                      style: TextStyle(
+                        fontFamily: "CircularStd",
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                )
-              : imageName != ""
-                  ? Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.3,
-                    )
-                  : Container(),
-          SizedBox(height: 7),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: "Quicksand",
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          SizedBox(height: 7),
-          (imageName == "")
-              ? Text(
-                  body,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 4,
-                  style: TextStyle(
-                    fontFamily: "CircularStd",
-                    fontSize: 17,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blueGrey.shade700,
-                  ),
-                )
-              : Container(),
-          SizedBox(height: 13),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.30,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                GestureDetector(
-                  child: Image.asset(
-                    isLiked ? "assets/like_fill.png" : "assets/like.png",
-                    width: 25,
-                    height: 25,
-                  ),
-                  onTap: () async {
-                    DocumentReference postRef = Firestore.instance
-                        .collection("story-collection")
-                        .document(documentId);
-
-                    if (likedByPeople.contains(widget.currentUser.uid)) {
-                      setState(() {
-                        isLiked = false;
-                      });
-                      likedByPeople =
-                          (await postRef.get()).data["liked-by-people"];
-
-                      setState(() {
-                        likedByPeople.remove(widget.currentUser.uid);
-                      });
-                    } else {
-                      setState(() {
-                        isLiked = true;
-                      });
-                      likedByPeople =
-                          (await postRef.get()).data["liked-by-people"];
-                      setState(() {
-                        likedByPeople.add(widget.currentUser.uid);
-                      });
-                    }
-                    Firestore.instance.runTransaction((transaction) async {
-                      await transaction.update(postRef, {
-                        "liked-by-people": likedByPeople,
-                      });
-                    });
-                  },
-                ),
-                GestureDetector(
-                  child:
-                      Image.asset("assets/comment.png", width: 25, height: 25),
-                  onTap: () {
-                    // TODO: Adding comment section.
-                  },
-                ),
-                GestureDetector(
-                  child: Image.asset("assets/share.png", width: 25, height: 25),
-                  onTap: () {
-                    // TODO: After friend section is done, sharing feature will be added.
-                  },
+                    SizedBox(height: 4),
+                    Text(
+                      timeSince,
+                      style: TextStyle(
+                        fontFamily: "Quicksand",
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            SizedBox(height: 14),
+            (imageUrl != "")
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      progressIndicatorBuilder: (context, url, progress) =>
+                          SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                              value: progress.progress),
+                        ),
+                      ),
+                    ),
+                  )
+                : imageName != ""
+                    ? Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.3,
+                      )
+                    : Container(),
+            SizedBox(height: 7),
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: "Quicksand",
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: 7),
+            (imageName == "")
+                ? Text(
+                    body,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 4,
+                    style: TextStyle(
+                      fontFamily: "CircularStd",
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.blueGrey.shade700,
+                    ),
+                  )
+                : Container(),
+            SizedBox(height: 13),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.30,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  GestureDetector(
+                    child: Image.asset(
+                      isLiked ? "assets/like_fill.png" : "assets/like.png",
+                      width: 25,
+                      height: 25,
+                    ),
+                    onTap: () async {
+                      DocumentReference postRef = Firestore.instance
+                          .collection("story-collection")
+                          .document(documentId);
+
+                      if (likedByPeople.contains(widget.currentUser.uid)) {
+                        setState(() {
+                          isLiked = false;
+                        });
+                        likedByPeople =
+                            (await postRef.get()).data["liked-by-people"];
+
+                        setState(() {
+                          likedByPeople.remove(widget.currentUser.uid);
+                        });
+                      } else {
+                        setState(() {
+                          isLiked = true;
+                        });
+                        likedByPeople =
+                            (await postRef.get()).data["liked-by-people"];
+                        setState(() {
+                          likedByPeople.add(widget.currentUser.uid);
+                        });
+                      }
+                      Firestore.instance.runTransaction((transaction) async {
+                        await transaction.update(postRef, {
+                          "liked-by-people": likedByPeople,
+                        });
+                      });
+                    },
+                  ),
+                  GestureDetector(
+                    child: Image.asset("assets/comment.png",
+                        width: 25, height: 25),
+                    onTap: () {
+                      // TODO: Adding comment section.
+                    },
+                  ),
+                  GestureDetector(
+                    child:
+                        Image.asset("assets/share.png", width: 25, height: 25),
+                    onTap: () {
+                      // TODO: After friend section is done, sharing feature will be added.
+                    },
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 7),
+            Text("${likedByPeople.length} likes"),
+          ],
+        ),
+      ),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => StoryTileExpanded(
+            avatarUrl: avatarUrl,
+            authorName: author,
+            upSince: timeSince,
+            title: title,
+            body: body,
+            documentId: documentId,
+            currentUser: widget.currentUser,
+            isLiked: isLiked,
+            likedByPeople: likedByPeople,
           ),
-          SizedBox(height: 7),
-          Text("${likedByPeople.length} likes"),
+        ));
+      },
+    );
+  }
+}
+
+class StoryTileExpanded extends StatefulWidget {
+  StoryTileExpanded(
+      {this.avatarUrl,
+      this.authorName,
+      this.upSince,
+      this.title,
+      this.body,
+      this.documentId,
+      this.isLiked,
+      this.likedByPeople,
+      this.currentUser});
+
+  final String avatarUrl, authorName, upSince, title, body, documentId;
+  final List likedByPeople;
+  final bool isLiked;
+  final FirebaseUser currentUser;
+
+  @override
+  State<StatefulWidget> createState() {
+    return _StoryTileExpandedState();
+  }
+}
+
+class _StoryTileExpandedState extends State<StoryTileExpanded> {
+  List likedByPeople;
+  String documentId;
+  bool isLiked;
+
+  @override
+  void initState() {
+    likedByPeople = widget.likedByPeople;
+    documentId = widget.documentId;
+    isLiked = widget.isLiked;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: GestureDetector(
+          child: Icon(Icons.arrow_back, color: Colors.black, size: 30),
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              height: 44,
+              width: 44,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: widget.avatarUrl != ""
+                    ? CachedNetworkImage(
+                        imageUrl: widget.avatarUrl,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(),
+              ),
+            ),
+            SizedBox(width: 15),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  widget.authorName,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: "CircularStd",
+                    fontSize: 20,
+                  ),
+                ),
+                Text(
+                  widget.upSince,
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontFamily: "Quicksand",
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      body: Stack(
+        children: <Widget>[
+          ListView(
+            padding: EdgeInsets.only(left: 20, right: 20, top: 30),
+            children: <Widget>[
+              Text(
+                widget.title,
+                style: TextStyle(
+                  fontFamily: "Quicksand",
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 50),
+              Text(
+                widget.body,
+                style: TextStyle(
+                  fontFamily: "Quicksand",
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 100),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Container(
+              height: 70,
+              width: MediaQuery.of(context).size.width,
+              color: Colors.grey.shade200,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      GestureDetector(
+                        child: Image.asset(
+                          isLiked ? "assets/like_fill.png" : "assets/like.png",
+                          width: 25,
+                          height: 25,
+                        ),
+                        onTap: () async {
+                          DocumentReference postRef = Firestore.instance
+                              .collection("story-collection")
+                              .document(documentId);
+
+                          if (likedByPeople.contains(widget.currentUser.uid)) {
+                            setState(() {
+                              isLiked = false;
+                            });
+                            likedByPeople =
+                            (await postRef.get()).data["liked-by-people"];
+
+                            setState(() {
+                              likedByPeople.remove(widget.currentUser.uid);
+                            });
+                          } else {
+                            setState(() {
+                              isLiked = true;
+                            });
+                            likedByPeople =
+                            (await postRef.get()).data["liked-by-people"];
+                            setState(() {
+                              likedByPeople.add(widget.currentUser.uid);
+                            });
+                          }
+                          Firestore.instance.runTransaction((transaction) async {
+                            await transaction.update(postRef, {
+                              "liked-by-people": likedByPeople,
+                            });
+                          });
+                        },
+                      ),
+                      GestureDetector(
+                        child:
+                        Image.asset("assets/comment.png", width: 25, height: 25),
+                        onTap: () {
+                          // TODO: Adding comment section.
+                        },
+                      ),
+                      GestureDetector(
+                        child: Image.asset("assets/share.png", width: 25, height: 25),
+                        onTap: () {
+                          // TODO: After friend section is done, sharing feature will be added.
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

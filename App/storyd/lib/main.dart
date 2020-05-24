@@ -3,12 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:storyd/screens/splash.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        systemNavigationBarColor: Colors.indigo,
-      )
-  );
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.black,
+  ));
   runApp(MyApp());
 }
 
