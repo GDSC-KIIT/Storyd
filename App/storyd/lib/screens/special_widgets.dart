@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:storyd/global_values.dart';
 
 class TagTextBubble extends StatefulWidget {
   TagTextBubble({this.text, this.color, this.tagPool, this.parent});
@@ -283,17 +284,20 @@ class _StoryTileState extends State<StoryTile> {
             ),
             SizedBox(height: 14),
             (imageUrl != "")
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      progressIndicatorBuilder: (context, url, progress) =>
-                          SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.3,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                              value: progress.progress),
+                ? Hero(
+                    tag: storyImageHeroTag + imageUrl,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        progressIndicatorBuilder: (context, url, progress) =>
+                            SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.3,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                                value: progress.progress),
+                          ),
                         ),
                       ),
                     ),
@@ -400,6 +404,7 @@ class _StoryTileState extends State<StoryTile> {
             authorName: author,
             upSince: timeSince,
             title: title,
+            imageUrl: imageUrl,
             body: body,
             documentId: documentId,
             currentUser: widget.currentUser,
@@ -419,12 +424,19 @@ class StoryTileExpanded extends StatefulWidget {
       this.upSince,
       this.title,
       this.body,
+      this.imageUrl,
       this.documentId,
       this.isLiked,
       this.likedByPeople,
       this.currentUser});
 
-  final String avatarUrl, authorName, upSince, title, body, documentId;
+  final String avatarUrl,
+      authorName,
+      upSince,
+      title,
+      body,
+      documentId,
+      imageUrl;
   final List likedByPeople;
   final bool isLiked;
   final FirebaseUser currentUser;
@@ -506,6 +518,7 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
         children: <Widget>[
           ListView(
             padding: EdgeInsets.only(left: 20, right: 20, top: 30),
+            physics: BouncingScrollPhysics(),
             children: <Widget>[
               Text(
                 widget.title,
@@ -515,7 +528,28 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(height: 50),
+              SizedBox(height: 40),
+              (widget.imageUrl != "")
+                  ? Hero(
+                      tag: storyImageHeroTag + widget.imageUrl,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: CachedNetworkImage(
+                          imageUrl: widget.imageUrl,
+                          progressIndicatorBuilder: (context, url, progress) =>
+                              SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height * 0.3,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                  value: progress.progress),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
+              widget.imageUrl != "" ? SizedBox(height: 30) : Container(),
               Text(
                 widget.body,
                 style: TextStyle(
@@ -556,7 +590,7 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                               isLiked = false;
                             });
                             likedByPeople =
-                            (await postRef.get()).data["liked-by-people"];
+                                (await postRef.get()).data["liked-by-people"];
 
                             setState(() {
                               likedByPeople.remove(widget.currentUser.uid);
@@ -566,12 +600,13 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                               isLiked = true;
                             });
                             likedByPeople =
-                            (await postRef.get()).data["liked-by-people"];
+                                (await postRef.get()).data["liked-by-people"];
                             setState(() {
                               likedByPeople.add(widget.currentUser.uid);
                             });
                           }
-                          Firestore.instance.runTransaction((transaction) async {
+                          Firestore.instance
+                              .runTransaction((transaction) async {
                             await transaction.update(postRef, {
                               "liked-by-people": likedByPeople,
                             });
@@ -579,14 +614,15 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                         },
                       ),
                       GestureDetector(
-                        child:
-                        Image.asset("assets/comment.png", width: 25, height: 25),
+                        child: Image.asset("assets/comment.png",
+                            width: 25, height: 25),
                         onTap: () {
                           // TODO: Adding comment section.
                         },
                       ),
                       GestureDetector(
-                        child: Image.asset("assets/share.png", width: 25, height: 25),
+                        child: Image.asset("assets/share.png",
+                            width: 25, height: 25),
                         onTap: () {
                           // TODO: After friend section is done, sharing feature will be added.
                         },
