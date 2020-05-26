@@ -16,6 +16,43 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   FirebaseUser user;
   int homePageIndex = 0;
+  List<Widget> friendListWidgets = [];
+
+  startUpJobs() async {
+    CollectionReference userDataCollection =
+        Firestore.instance.collection("user-data");
+    var myUserInfo = await userDataCollection.document(user.uid).get();
+    List<Widget> _friendListWidgets = [];
+    myUserInfo.data["friend-list"].forEach((id) async {
+      var friendUserInfo = await userDataCollection.document(id).get();
+
+      _friendListWidgets.add(Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          children: <Widget>[
+            SizedBox(
+              height: 50,
+              width: 50,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: friendUserInfo.data["avatar-url"] != "" ? CachedNetworkImage(
+                  imageUrl: friendUserInfo.data["avatar-url"],
+                  fit: BoxFit.cover,
+                ) : Image.asset("assets/avatar.png"),
+              ),
+            ),
+            SizedBox(width: 10),
+            Text(friendUserInfo.data["name"]),
+          ],
+        ),
+      ));
+    });
+
+    setState(() {
+      friendListWidgets = _friendListWidgets;
+    });
+
+  }
 
   @override
   void initState() {
@@ -23,6 +60,9 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         user = value;
       });
+
+      WidgetsBinding.instance
+          .addPostFrameCallback((timeStamp) => startUpJobs());
     });
 
     super.initState();
@@ -100,8 +140,31 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 // Friends - 1
-                Center(
-                  child: Text("Friends"),
+                Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.all(30),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.2,
+                        child: Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            child: TextField(),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView(
+                          physics: BouncingScrollPhysics(),
+                          children: friendListWidgets,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 // Direct Messages - 2
                 Center(

@@ -215,9 +215,11 @@ class _StoryTileState extends State<StoryTile> {
           .child("story-images/$imageName")
           .getDownloadURL()
           .then((value) {
-        setState(() {
-          imageUrl = value;
-        });
+        if(this.mounted) {
+          setState(() {
+            imageUrl = value;
+          });
+        }
       });
     }
 
@@ -283,9 +285,9 @@ class _StoryTileState extends State<StoryTile> {
               ],
             ),
             SizedBox(height: 14),
-            (imageUrl != "")
+            imageUrl != ""
                 ? Hero(
-                    tag: storyImageHeroTag + imageUrl,
+                    tag: imageUrl,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
                       child: CachedNetworkImage(
@@ -529,9 +531,9 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                 ),
               ),
               SizedBox(height: 40),
-              (widget.imageUrl != "")
+              widget.imageUrl != ""
                   ? Hero(
-                      tag: storyImageHeroTag + widget.imageUrl,
+                      tag: widget.imageUrl,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(14),
                         child: CachedNetworkImage(
