@@ -35,10 +35,12 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 50,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(25),
-                child: friendUserInfo.data["avatar-url"] != "" ? CachedNetworkImage(
-                  imageUrl: friendUserInfo.data["avatar-url"],
-                  fit: BoxFit.cover,
-                ) : Image.asset("assets/avatar.png"),
+                child: friendUserInfo.data["avatar-url"] != ""
+                    ? CachedNetworkImage(
+                        imageUrl: friendUserInfo.data["avatar-url"],
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset("assets/avatar.png"),
               ),
             ),
             SizedBox(width: 10),
@@ -51,7 +53,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       friendListWidgets = _friendListWidgets;
     });
-
   }
 
   @override
@@ -340,10 +341,12 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> {
                       return avatarUrl != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(12.5),
-                              child: CachedNetworkImage(
-                                fit: BoxFit.cover,
-                                imageUrl: avatarUrl,
-                              ),
+                              child: avatarUrl != ""
+                                  ? CachedNetworkImage(
+                                      fit: BoxFit.cover,
+                                      imageUrl: avatarUrl,
+                                    )
+                                  : Image.asset("assets/avatar.png"),
                             )
                           : Container();
                     }),

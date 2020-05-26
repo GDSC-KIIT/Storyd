@@ -486,7 +486,7 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                         imageUrl: widget.avatarUrl,
                         fit: BoxFit.cover,
                       )
-                    : Container(),
+                    : Image.asset("assets/avatar.png"),
               ),
             ),
             SizedBox(width: 15),

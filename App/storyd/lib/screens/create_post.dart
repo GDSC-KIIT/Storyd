@@ -178,10 +178,10 @@ class NewPostFieldState extends State<NewPostField> {
                     width: 30,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(17.5),
-                      child: widget.avatarUrl != null ? CachedNetworkImage(
+                      child: widget.avatarUrl != "" ? CachedNetworkImage(
                         imageUrl: widget.avatarUrl,
                         fit: BoxFit.cover,
-                      ) : Container(),
+                      ) : Image.asset("assets/avatar.png"),
                     ),
                   ),
                   SizedBox(width: 15),
@@ -234,10 +234,10 @@ class NewPostFieldState extends State<NewPostField> {
                         width: 30,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(17.5),
-                          child: widget.avatarUrl != null ? CachedNetworkImage(
+                          child: widget.avatarUrl != "" ? CachedNetworkImage(
                             imageUrl: widget.avatarUrl,
                             fit: BoxFit.cover,
-                          ) : Container(),
+                          ) : Image.asset("assets/avatar.png"),
                         ),
                       ),
                       SizedBox(width: 15),
