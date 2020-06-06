@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:storyd/data_models/posts_data/posts_data.dart';
 import 'package:storyd/screens/create_post.dart';
 import 'package:storyd/screens/special_widgets.dart';
+
+PostData posts = PostData();
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -16,38 +22,120 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   FirebaseUser user;
   int homePageIndex = 0;
+  Firestore firestore = Firestore.instance;
+  bool isLoading = false;
+  bool hasMore = true;
+  DocumentSnapshot lastDocumentFetchedOnScroll, lastDocumentFetchedOnRefresh;
+  int documentLimit = 4;
+  ScrollController _scrollController = ScrollController();
+
   List<Widget> friendListWidgets = [];
 
+  Future<void> fetchPosts() async {
+    if (!hasMore) {
+      print("No more posts");
+      return;
+    }
+    if (isLoading) {
+      return;
+    }
+    setState(() {
+      isLoading = true;
+    });
+
+    QuerySnapshot querySnapshot;
+    if (lastDocumentFetchedOnScroll == null) {
+      querySnapshot = await firestore
+          .collection('story-collection')
+          .orderBy('up-since', descending: true)
+          .limit(documentLimit)
+          .getDocuments();
+    } else {
+      querySnapshot = await firestore
+          .collection('story-collection')
+          .orderBy('up-since', descending: true)
+          .startAfterDocument(lastDocumentFetchedOnScroll)
+          .limit(documentLimit)
+          .getDocuments();
+      print("Success");
+    }
+    if (querySnapshot.documents.length < documentLimit) {
+      hasMore = false;
+    }
+
+    lastDocumentFetchedOnScroll = querySnapshot.documents.length != 0
+        ? querySnapshot.documents[querySnapshot.documents.length - 1]
+        : null;
+    posts.addAllItems(querySnapshot.documents);
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> onPostHomeRefresh() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    QuerySnapshot querySnapshot;
+    if (lastDocumentFetchedOnRefresh == null) {
+      querySnapshot = await firestore
+          .collection('story-collection')
+          .orderBy('up-since', descending: true)
+          .limit(documentLimit)
+          .getDocuments();
+    } else {
+      querySnapshot = await firestore
+          .collection('story-collection')
+          .orderBy('up-since', descending: true)
+          .endBeforeDocument(lastDocumentFetchedOnRefresh)
+          .limit(documentLimit)
+          .getDocuments();
+      print(lastDocumentFetchedOnRefresh.data["title"]); // Debugging Text
+    }
+
+    lastDocumentFetchedOnRefresh =
+        querySnapshot.documents.length != 0 ? querySnapshot.documents[0] : null;
+
+    posts.insertAllItems(0, querySnapshot.documents);
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   startUpJobs() async {
-    CollectionReference userDataCollection =
-        Firestore.instance.collection("user-data");
+    fetchPosts();
+
+    CollectionReference userDataCollection = firestore.collection("user-data");
     var myUserInfo = await userDataCollection.document(user.uid).get();
     List<Widget> _friendListWidgets = [];
     myUserInfo.data["friend-list"].forEach((id) async {
       var friendUserInfo = await userDataCollection.document(id).get();
 
-      _friendListWidgets.add(Padding(
-        padding: EdgeInsets.all(10),
-        child: Row(
-          children: <Widget>[
-            SizedBox(
-              height: 50,
-              width: 50,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: friendUserInfo.data["avatar-url"] != ""
-                    ? CachedNetworkImage(
-                        imageUrl: friendUserInfo.data["avatar-url"],
-                        fit: BoxFit.cover,
-                      )
-                    : Image.asset("assets/avatar.png"),
+      _friendListWidgets.add(
+        Padding(
+          padding: EdgeInsets.all(10),
+          child: Row(
+            children: <Widget>[
+              SizedBox(
+                height: 50,
+                width: 50,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: friendUserInfo.data["avatar-url"] != ""
+                      ? CachedNetworkImage(
+                          imageUrl: friendUserInfo.data["avatar-url"],
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset("assets/avatar.png"),
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            Text(friendUserInfo.data["name"]),
-          ],
+              SizedBox(width: 10),
+              Text(friendUserInfo.data["name"]),
+            ],
+          ),
         ),
-      ));
+      );
     });
 
     setState(() {
@@ -66,6 +154,14 @@ class _MyHomePageState extends State<MyHomePage> {
           .addPostFrameCallback((timeStamp) => startUpJobs());
     });
 
+    _scrollController.addListener(() {
+      double maxScroll = _scrollController.position.maxScrollExtent;
+      double currentScroll = _scrollController.position.pixels;
+      double delta = MediaQuery.of(context).size.height * 0.20;
+      if (maxScroll - currentScroll <= delta) {
+        fetchPosts();
+      }
+    });
     super.initState();
   }
 
@@ -73,6 +169,12 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       homePageIndex = index;
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -88,56 +190,55 @@ class _MyHomePageState extends State<MyHomePage> {
               index: homePageIndex,
               children: [
                 // Home - 0
-                Padding(
-                  padding: EdgeInsets.only(left: 24, right: 24),
-                  child: StreamBuilder(
-                    stream: Firestore.instance
-                        .collection('story-collection')
-                        .orderBy("up-since", descending: true)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (user == null) {
-                        return Center(
-                          child: SizedBox(
-                            height: 80,
-                            width: 80,
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                        case ConnectionState.none:
-                          return Center(
+                SafeArea(
+                  child: RefreshIndicator(
+//                    header: WaterDropMaterialHeader(
+//                      backgroundColor: Colors.black,
+//                      distance: 55,
+//                      //circleColor: Colors.white,
+//                      //circleRadius: 20,
+//                      //rectHeight: MediaQuery.of(context).size.height * 0.12,
+//                    ),
+                    //enablePullDown: true,
+                    onRefresh: () async {
+                      await onPostHomeRefresh();
+                    },
+                    child: posts.length == 0
+                        ? Center(
                             child: SizedBox(
                               height: 80,
                               width: 80,
                               child: CircularProgressIndicator(),
                             ),
-                          );
-                        default:
-                          return ListView.builder(
-                            cacheExtent: MediaQuery.of(context).size.height *
-                                4, // Equivalent to 4 page caching/
-                            physics: BouncingScrollPhysics(),
-                            itemCount: snapshot.data.documents.length + 2,
-                            // +2 for SearchBar and BottomEmptyBlock
-                            itemBuilder: (context, index) {
-                              if (index == 0) {
-                                return HomePageSearchBar();
-                              } else if (index ==
-                                  snapshot.data.documents.length + 1) {
-                                return SizedBox(height: 70);
-                              }
-
-                              return StoryTile(
-                                data: snapshot.data.documents[index - 1],
-                                currentUser: user,
+                          )
+                        : Observer(
+                            builder: (context) {
+                              return ListView.builder(
+                                padding: EdgeInsets.only(
+                                    left: 24, right: 24, top: 20),
+                                cacheExtent:
+                                    MediaQuery.of(context).size.height * 4,
+                                // Equivalent to 4 page caching
+                                itemCount: posts.length + 2,
+                                controller: _scrollController,
+                                // +2 for SearchBar and BottomEmptyBlock
+                                itemBuilder: (context, index) {
+                                  if (index == 0) {
+                                    return HomePageSearchBar();
+                                  } else if (index == posts.length + 1) {
+                                    return SizedBox(height: 70);
+                                  }
+                                  return KeyedSubtree(
+                                    child: StoryTile(
+                                      data: posts.posts[index - 1].data,
+                                      currentUser: user,
+                                    ),
+                                    key: Key("${Random().nextInt(999999)}"),
+                                  );
+                                },
                               );
                             },
-                          );
-                      }
-                    },
+                          ),
                   ),
                 ),
                 // Friends - 1
@@ -276,8 +377,8 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> {
                   size: 33,
                 ),
               ),
-              onTap: () {
-                Navigator.of(context).push(
+              onTap: () async {
+                var newPost = await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => NewPostField(
                       avatarUrl: avatarUrl,
@@ -286,6 +387,8 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> {
                     ),
                   ),
                 );
+
+                if (newPost != null) posts.insertItem(0, newPost);
               },
             ),
             // Direct Messages

@@ -215,7 +215,7 @@ class _StoryTileState extends State<StoryTile> {
           .child("story-images/$imageName")
           .getDownloadURL()
           .then((value) {
-        if(this.mounted) {
+        if (this.mounted) {
           setState(() {
             imageUrl = value;
           });
@@ -298,7 +298,8 @@ class _StoryTileState extends State<StoryTile> {
                           height: MediaQuery.of(context).size.height * 0.3,
                           child: Center(
                             child: CircularProgressIndicator(
-                                value: progress.progress),
+                              value: progress.progress,
+                            ),
                           ),
                         ),
                       ),
@@ -367,7 +368,9 @@ class _StoryTileState extends State<StoryTile> {
                         likedByPeople =
                             (await postRef.get()).data["liked-by-people"];
                         setState(() {
-                          likedByPeople.add(widget.currentUser.uid);
+                          if (!likedByPeople.contains(widget.currentUser.uid)) {
+                            likedByPeople.add(widget.currentUser.uid);
+                          }
                         });
                       }
                       Firestore.instance.runTransaction((transaction) async {
@@ -399,21 +402,27 @@ class _StoryTileState extends State<StoryTile> {
           ],
         ),
       ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => StoryTileExpanded(
-            avatarUrl: avatarUrl,
-            authorName: author,
-            upSince: timeSince,
-            title: title,
-            imageUrl: imageUrl,
-            body: body,
-            documentId: documentId,
-            currentUser: widget.currentUser,
-            isLiked: isLiked,
-            likedByPeople: likedByPeople,
+      onTap: () async {
+        var likesData = await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => StoryTileExpanded(
+              avatarUrl: avatarUrl,
+              authorName: author,
+              upSince: timeSince,
+              title: title,
+              imageUrl: imageUrl,
+              body: body,
+              documentId: documentId,
+              currentUser: widget.currentUser,
+              isLiked: isLiked,
+              likedByPeople: likedByPeople,
+            ),
           ),
-        ));
+        );
+        setState(() {
+          isLiked = likesData[0];
+          likedByPeople = likesData[1];
+        });
       },
     );
   }
@@ -470,7 +479,7 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
         leading: GestureDetector(
           child: Icon(Icons.arrow_back, color: Colors.black, size: 30),
           onTap: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop([isLiked, likedByPeople]);
           },
         ),
         title: Row(
@@ -604,7 +613,10 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
                             likedByPeople =
                                 (await postRef.get()).data["liked-by-people"];
                             setState(() {
-                              likedByPeople.add(widget.currentUser.uid);
+                              if (!likedByPeople
+                                  .contains(widget.currentUser.uid)) {
+                                likedByPeople.add(widget.currentUser.uid);
+                              }
                             });
                           }
                           Firestore.instance

@@ -142,8 +142,11 @@ class NewPostFieldState extends State<NewPostField> {
                   await uploadTask.onComplete;
                 }
 
-                widget.homeState.setState(() {});
-                Navigator.of(context).pop();
+                var newPost = await (Firestore.instance
+                    .collection("story-collection")
+                    .document(documentId)
+                    .get());
+                Navigator.of(context).pop(newPost);
               }
             },
             child: Padding(
@@ -178,10 +181,12 @@ class NewPostFieldState extends State<NewPostField> {
                     width: 30,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(17.5),
-                      child: widget.avatarUrl != "" ? CachedNetworkImage(
-                        imageUrl: widget.avatarUrl,
-                        fit: BoxFit.cover,
-                      ) : Image.asset("assets/avatar.png"),
+                      child: widget.avatarUrl != ""
+                          ? CachedNetworkImage(
+                              imageUrl: widget.avatarUrl,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset("assets/avatar.png"),
                     ),
                   ),
                   SizedBox(width: 15),
@@ -234,10 +239,12 @@ class NewPostFieldState extends State<NewPostField> {
                         width: 30,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(17.5),
-                          child: widget.avatarUrl != "" ? CachedNetworkImage(
-                            imageUrl: widget.avatarUrl,
-                            fit: BoxFit.cover,
-                          ) : Image.asset("assets/avatar.png"),
+                          child: widget.avatarUrl != ""
+                              ? CachedNetworkImage(
+                                  imageUrl: widget.avatarUrl,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset("assets/avatar.png"),
                         ),
                       ),
                       SizedBox(width: 15),
