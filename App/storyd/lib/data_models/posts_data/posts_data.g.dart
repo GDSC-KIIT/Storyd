@@ -19,13 +19,13 @@ mixin _$PostData on _PostData, Store {
   final _$postsAtom = Atom(name: '_PostData.posts');
 
   @override
-  ObservableList<dynamic> get posts {
+  List<DocumentSnapshot> get posts {
     _$postsAtom.reportRead();
     return super.posts;
   }
 
   @override
-  set posts(ObservableList<dynamic> value) {
+  set posts(List<DocumentSnapshot> value) {
     _$postsAtom.reportWrite(value, super.posts, () {
       super.posts = value;
     });

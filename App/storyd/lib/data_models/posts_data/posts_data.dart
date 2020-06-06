@@ -7,7 +7,7 @@ class PostData = _PostData with _$PostData;
 
 abstract class _PostData with Store {
   @observable
-  var posts = ObservableList();
+  List<DocumentSnapshot> posts = ObservableList();
 
   @computed
   int get length => posts.length;
