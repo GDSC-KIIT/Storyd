@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:storyd/global_values.dart';
+import 'package:uuid/uuid.dart';
 
 class TagTextBubble extends StatefulWidget {
   TagTextBubble({this.text, this.color, this.tagPool, this.parent});
@@ -148,6 +149,8 @@ class _StoryTileState extends State<StoryTile> {
       imageUrl = "",
       documentId = "";
 
+  String heroTag = "${Uuid().v4()}";
+
   List likedByPeople = [];
 
   bool isLiked;
@@ -203,10 +206,12 @@ class _StoryTileState extends State<StoryTile> {
         .document(authorUid)
         .get()
         .then((DocumentSnapshot ds) {
-      setState(() {
-        author = ds.data["name"];
-        avatarUrl = ds.data["avatar-url"];
-      });
+      if (this.mounted) {
+        setState(() {
+          author = ds.data["name"];
+          avatarUrl = ds.data["avatar-url"];
+        });
+      }
     });
 
     if (imageName != "") {
@@ -287,7 +292,7 @@ class _StoryTileState extends State<StoryTile> {
             SizedBox(height: 14),
             imageUrl != ""
                 ? Hero(
-                    tag: imageUrl,
+                    tag: heroTag,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
                       child: CachedNetworkImage(
@@ -416,6 +421,7 @@ class _StoryTileState extends State<StoryTile> {
               currentUser: widget.currentUser,
               isLiked: isLiked,
               likedByPeople: likedByPeople,
+              heroTag: heroTag,
             ),
           ),
         );
@@ -439,7 +445,8 @@ class StoryTileExpanded extends StatefulWidget {
       this.documentId,
       this.isLiked,
       this.likedByPeople,
-      this.currentUser});
+      this.currentUser,
+      this.heroTag});
 
   final String avatarUrl,
       authorName,
@@ -447,7 +454,9 @@ class StoryTileExpanded extends StatefulWidget {
       title,
       body,
       documentId,
-      imageUrl;
+      imageUrl,
+      heroTag;
+
   final List likedByPeople;
   final bool isLiked;
   final FirebaseUser currentUser;
@@ -542,7 +551,7 @@ class _StoryTileExpandedState extends State<StoryTileExpanded> {
               SizedBox(height: 40),
               widget.imageUrl != ""
                   ? Hero(
-                      tag: widget.imageUrl,
+                      tag: widget.heroTag,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(14),
                         child: CachedNetworkImage(

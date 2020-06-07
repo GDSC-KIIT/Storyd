@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:storyd/data_models/posts_data/posts_data.dart';
 import 'package:storyd/screens/create_post.dart';
 import 'package:storyd/screens/special_widgets.dart';
@@ -28,13 +29,14 @@ class _MyHomePageState extends State<MyHomePage> {
   DocumentSnapshot lastDocumentFetchedOnScroll, lastDocumentFetchedOnRefresh;
   int documentLimit = 4;
   ScrollController _scrollController = ScrollController();
+  RefreshController _refreshController = RefreshController();
 
   List<Widget> friendListWidgets = [];
 
-  Future<void> fetchPosts() async {
+  Future fetchPosts() async {
     if (!hasMore) {
       print("No more posts");
-      return;
+      return false;
     }
     if (isLoading) {
       return;
@@ -57,7 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
           .startAfterDocument(lastDocumentFetchedOnScroll)
           .limit(documentLimit)
           .getDocuments();
-      print("Success");
     }
     if (querySnapshot.documents.length < documentLimit) {
       hasMore = false;
@@ -65,11 +66,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
     lastDocumentFetchedOnScroll = querySnapshot.documents.length != 0
         ? querySnapshot.documents[querySnapshot.documents.length - 1]
-        : null;
+        : lastDocumentFetchedOnScroll;
+    lastDocumentFetchedOnRefresh = querySnapshot.documents.length != 0
+        ? querySnapshot.documents[0]
+        : lastDocumentFetchedOnRefresh;
     posts.addAllItems(querySnapshot.documents);
     setState(() {
       isLoading = false;
     });
+
+    return true;
   }
 
   Future<void> onPostHomeRefresh() async {
@@ -91,11 +97,11 @@ class _MyHomePageState extends State<MyHomePage> {
           .endBeforeDocument(lastDocumentFetchedOnRefresh)
           .limit(documentLimit)
           .getDocuments();
-      print(lastDocumentFetchedOnRefresh.data["title"]); // Debugging Text
     }
 
-    lastDocumentFetchedOnRefresh =
-        querySnapshot.documents.length != 0 ? querySnapshot.documents[0] : null;
+    lastDocumentFetchedOnRefresh = querySnapshot.documents.length != 0
+        ? querySnapshot.documents[0]
+        : lastDocumentFetchedOnRefresh;
 
     posts.insertAllItems(0, querySnapshot.documents);
     setState(() {
@@ -154,14 +160,14 @@ class _MyHomePageState extends State<MyHomePage> {
           .addPostFrameCallback((timeStamp) => startUpJobs());
     });
 
-    _scrollController.addListener(() {
-      double maxScroll = _scrollController.position.maxScrollExtent;
-      double currentScroll = _scrollController.position.pixels;
-      double delta = MediaQuery.of(context).size.height * 0.20;
-      if (maxScroll - currentScroll <= delta) {
-        fetchPosts();
-      }
-    });
+//    _scrollController.addListener(() {
+//      double maxScroll = _scrollController.position.maxScrollExtent;
+//      double currentScroll = _scrollController.position.pixels;
+//      double delta = MediaQuery.of(context).size.height * 0.20;
+//      if (maxScroll - currentScroll <= delta) {
+//        fetchPosts();
+//      }
+//    });
     super.initState();
   }
 
@@ -191,55 +197,162 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 // Home - 0
                 SafeArea(
-                  child: RefreshIndicator(
-//                    header: WaterDropMaterialHeader(
-//                      backgroundColor: Colors.black,
-//                      distance: 55,
-//                      //circleColor: Colors.white,
-//                      //circleRadius: 20,
-//                      //rectHeight: MediaQuery.of(context).size.height * 0.12,
-//                    ),
-                    //enablePullDown: true,
-                    onRefresh: () async {
-                      await onPostHomeRefresh();
-                    },
-                    child: posts.length == 0
-                        ? Center(
-                            child: SizedBox(
-                              height: 80,
-                              width: 80,
-                              child: CircularProgressIndicator(),
-                            ),
-                          )
-                        : Observer(
-                            builder: (context) {
-                              return ListView.builder(
-                                padding: EdgeInsets.only(
-                                    left: 24, right: 24, top: 20),
-                                cacheExtent:
-                                    MediaQuery.of(context).size.height * 4,
-                                // Equivalent to 4 page caching
-                                itemCount: posts.length + 2,
-                                controller: _scrollController,
-                                // +2 for SearchBar and BottomEmptyBlock
-                                itemBuilder: (context, index) {
-                                  if (index == 0) {
-                                    return HomePageSearchBar();
-                                  } else if (index == posts.length + 1) {
-                                    return SizedBox(height: 70);
-                                  }
-                                  return KeyedSubtree(
-                                    child: StoryTile(
-                                      data: posts.posts[index - 1].data,
-                                      currentUser: user,
-                                    ),
-                                    key: Key("${Random().nextInt(999999)}"),
-                                  );
-                                },
-                              );
-                            },
+                  child: posts.length == 0
+                      ? Center(
+                          child: SizedBox(
+                            height: 80,
+                            width: 80,
+                            child: CircularProgressIndicator(),
                           ),
-                  ),
+                        )
+                      : Observer(
+                          builder: (context) {
+                            return SizedBox(
+                              height: MediaQuery.of(context).size.height - 60,
+                              child: SmartRefresher(
+                                enablePullDown: true,
+                                enablePullUp: true,
+                                controller: _refreshController,
+                                header: WaterDropMaterialHeader(
+                                  distance: 60,
+                                  backgroundColor: Colors.black,
+                                ),
+                                footer: CustomFooter(
+                                  builder: (context, mode) {
+                                    Widget body;
+                                    if (mode == LoadStatus.idle) {
+                                      body = Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            Icon(Icons.arrow_upward),
+                                            SizedBox(width: 20),
+                                            Text(
+                                              "Pull up load!",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else if (mode == LoadStatus.loading) {
+                                      body = Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                            SizedBox(width: 20),
+                                            Text(
+                                              "Loading more posts...",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else if (mode == LoadStatus.failed) {
+                                      body = Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            Icon(Icons.close),
+                                            SizedBox(width: 20),
+                                            Text(
+                                              "Failed",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else if (mode == LoadStatus.canLoading) {
+                                      body = Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            Icon(Icons.arrow_upward),
+                                            SizedBox(width: 20),
+                                            Text(
+                                              "Pull up to load",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      body = Center(
+                                        child: Text(
+                                          "No more posts!",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return body;
+                                  },
+                                ),
+                                onRefresh: () async {
+                                  await onPostHomeRefresh();
+                                  print("Refresh Completed!");
+                                  _refreshController.refreshCompleted();
+                                },
+                                onLoading: () async {
+                                  bool status = await fetchPosts();
+                                  if (status == true) {
+                                    _refreshController.loadComplete();
+                                  } else if (status == false) {
+                                    _refreshController.loadNoData();
+                                  } else {
+                                    _refreshController.loadFailed();
+                                  }
+                                },
+                                child: ListView.builder(
+                                  padding: EdgeInsets.only(
+                                    left: 24,
+                                    right: 24,
+                                    top: 20,
+                                  ),
+                                  cacheExtent:
+                                      MediaQuery.of(context).size.height * 4,
+                                  // Equivalent to 4 page caching
+                                  itemCount: posts.length + 2,
+                                  controller: _scrollController,
+                                  // +2 for SearchBar and BottomEmptyBlock
+                                  itemBuilder: (context, index) {
+                                    if (index == 0) {
+                                      return HomePageSearchBar();
+                                    } else if (index == posts.length + 1) {
+                                      return SizedBox(height: 20);
+                                    }
+                                    return KeyedSubtree(
+                                      child: StoryTile(
+                                        data: posts.posts[index - 1].data,
+                                        currentUser: user,
+                                      ),
+                                      key: Key(
+                                          "${posts.posts[index - 1].documentID}"),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                 ),
                 // Friends - 1
                 Container(
