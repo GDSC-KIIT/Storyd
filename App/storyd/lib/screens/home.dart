@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:storyd/data_models/posts_data/posts_data.dart';
 import 'package:storyd/screens/create_post.dart';
 import 'package:storyd/screens/special_widgets.dart';
@@ -30,6 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int documentLimit = 4;
   ScrollController _scrollController = ScrollController();
   RefreshController _refreshController = RefreshController();
+  PanelController _panelController = PanelController();
 
   List<Widget> friendListWidgets = [];
 
@@ -160,27 +162,29 @@ class _MyHomePageState extends State<MyHomePage> {
           .addPostFrameCallback((timeStamp) => startUpJobs());
     });
 
-//    _scrollController.addListener(() {
-//      double maxScroll = _scrollController.position.maxScrollExtent;
-//      double currentScroll = _scrollController.position.pixels;
-//      double delta = MediaQuery.of(context).size.height * 0.20;
-//      if (maxScroll - currentScroll <= delta) {
-//        fetchPosts();
-//      }
-//    });
+    _scrollController.addListener(slideToHideListenerFunction);
     super.initState();
+  }
+
+  slideToHideListenerFunction() {
+    double currentScroll = _scrollController.position.pixels;
+    double deviceHeight = MediaQuery.of(context).size.height;
+    double sensitivity = 2.0;
+
+    double panelPosition = 1 - currentScroll / (deviceHeight / sensitivity);
+
+    if (!(0.0 <= panelPosition && panelPosition <= 1.0)) {
+      _panelController.close();
+      return;
+    }
+
+    _panelController.panelPosition = panelPosition;
   }
 
   void changeHomePageSlot(int index) {
     setState(() {
       homePageIndex = index;
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -208,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       : Observer(
                           builder: (context) {
                             return SizedBox(
-                              height: MediaQuery.of(context).size.height - 60,
+                              height: MediaQuery.of(context).size.height - 20,
                               child: SmartRefresher(
                                 enablePullDown: true,
                                 enablePullUp: true,
@@ -395,6 +399,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBar(
             currentUser: user,
             homeState: this,
+            panelController: _panelController,
             onBottomBarAction: (int pageIndex) {
               changeHomePageSlot(pageIndex);
             },
@@ -409,10 +414,12 @@ class BottomNavigationBar extends StatefulWidget {
   BottomNavigationBar(
       {@required this.currentUser,
       @required this.homeState,
+      @required this.panelController,
       this.onBottomBarAction});
 
   final State homeState;
   final FirebaseUser currentUser;
+  final PanelController panelController;
   final Function(int) onBottomBarAction;
 
   @override
@@ -424,159 +431,196 @@ class BottomNavigationBar extends StatefulWidget {
 class _BottomNavigationBarState extends State<BottomNavigationBar> {
   String avatarUrl;
   int activeSelectionIndex = 0;
+  double bottomNavigatorMaxHeight = 90;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      widget.panelController.open();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: 70,
-        decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 30)]),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            // Home
-            GestureDetector(
-              child: Icon(Icons.home,
-                  color: activeSelectionIndex == 0
-                      ? Colors.black
-                      : Colors.blueGrey.shade300),
-              onTap: () {
-                setState(() {
-                  activeSelectionIndex = 0;
-                });
-                widget.onBottomBarAction(0);
-              },
-            ),
-            // Friends
-            GestureDetector(
-              child: Icon(Icons.people_outline,
-                  color: activeSelectionIndex == 1
-                      ? Colors.black
-                      : Colors.blueGrey.shade300),
-              onTap: () {
-                setState(() {
-                  activeSelectionIndex = 1;
-                });
-                widget.onBottomBarAction(1);
-              },
-            ),
-            // Add post
-            GestureDetector(
-              child: Container(
-                height: 45,
-                width: 45,
-                decoration: BoxDecoration(
-                  color: Color.fromRGBO(100, 190, 255, 1),
-                  borderRadius: BorderRadius.circular(35),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.7),
-                      blurRadius: 33,
-                      spreadRadius: 0.1,
+    return SlidingUpPanel(
+      minHeight: 25,
+      maxHeight: bottomNavigatorMaxHeight,
+      controller: widget.panelController,
+      panel: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: bottomNavigatorMaxHeight,
+          decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 30)]),
+          child: Column(
+            children: <Widget>[
+              Center(
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  height: 7,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey.shade200,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(7),
+                      topRight: Radius.circular(7),
+                      bottomLeft: Radius.circular(2),
+                      bottomRight: Radius.circular(2),
                     ),
-                  ],
-                  border: Border.all(
-                    width: 5,
-                    color: Colors.white,
                   ),
-                ),
-                child: Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 33,
                 ),
               ),
-              onTap: () async {
-                var newPost = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => NewPostField(
-                      avatarUrl: avatarUrl,
-                      currentUser: widget.currentUser,
-                      homeState: widget.homeState,
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  // Home
+                  GestureDetector(
+                    child: Icon(Icons.home,
+                        size: 28,
+                        color: activeSelectionIndex == 0
+                            ? Colors.black
+                            : Colors.blueGrey.shade300),
+                    onTap: () {
+                      setState(() {
+                        activeSelectionIndex = 0;
+                      });
+                      widget.onBottomBarAction(0);
+                    },
                   ),
-                );
-
-                if (newPost != null) posts.insertItem(0, newPost);
-              },
-            ),
-            // Direct Messages
-            GestureDetector(
-              child: Icon(Icons.chat_bubble_outline,
-                  color: activeSelectionIndex == 2
-                      ? Colors.black
-                      : Colors.blueGrey.shade300),
-              onTap: () {
-                setState(() {
-                  activeSelectionIndex = 2;
-                });
-                widget.onBottomBarAction(2);
-              },
-            ),
-            // Profile
-            GestureDetector(
-              child: Container(
-                height: 33,
-                width: 33,
-                decoration: BoxDecoration(
-                  color: activeSelectionIndex == 3
-                      ? Colors.black
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    height: 30,
-                    width: 30,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        width: 3,
+                  // Friends
+                  GestureDetector(
+                    child: Icon(Icons.people_outline,
+                        size: 28,
+                        color: activeSelectionIndex == 1
+                            ? Colors.black
+                            : Colors.blueGrey.shade300),
+                    onTap: () {
+                      setState(() {
+                        activeSelectionIndex = 1;
+                      });
+                      widget.onBottomBarAction(1);
+                    },
+                  ),
+                  // Add post
+                  GestureDetector(
+                    child: Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(100, 190, 255, 1),
+                        borderRadius: BorderRadius.circular(35),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.7),
+                            blurRadius: 33,
+                            spreadRadius: 0.1,
+                          ),
+                        ],
+                        border: Border.all(
+                          width: 5,
+                          color: Colors.white,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.add,
                         color: Colors.white,
+                        size: 33,
                       ),
                     ),
-                    child: Builder(builder: (context) {
-                      if (widget.currentUser == null) {
-                        return Container();
-                      }
-                      Firestore.instance
-                          .collection("user-data")
-                          .document(widget.currentUser.uid)
-                          .get()
-                          .then((ds) {
-                        setState(() {
-                          avatarUrl = ds.data["avatar-url"];
-                        });
-                      });
+                    onTap: () async {
+                      var newPost = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => NewPostField(
+                            avatarUrl: avatarUrl,
+                            currentUser: widget.currentUser,
+                            homeState: widget.homeState,
+                          ),
+                        ),
+                      );
 
-                      return avatarUrl != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12.5),
-                              child: avatarUrl != ""
-                                  ? CachedNetworkImage(
-                                      fit: BoxFit.cover,
-                                      imageUrl: avatarUrl,
-                                    )
-                                  : Image.asset("assets/avatar.png"),
-                            )
-                          : Container();
-                    }),
+                      if (newPost != null) posts.insertItem(0, newPost);
+                    },
                   ),
-                ),
+                  // Direct Messages
+                  GestureDetector(
+                    child: Icon(Icons.chat_bubble_outline,
+                        size: 28,
+                        color: activeSelectionIndex == 2
+                            ? Colors.black
+                            : Colors.blueGrey.shade300),
+                    onTap: () {
+                      setState(() {
+                        activeSelectionIndex = 2;
+                      });
+                      widget.onBottomBarAction(2);
+                    },
+                  ),
+                  // Profile
+                  GestureDetector(
+                    child: Container(
+                      height: 28,
+                      width: 28,
+                      decoration: BoxDecoration(
+                        color: activeSelectionIndex == 3
+                            ? Colors.black
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          height: 26,
+                          width: 26,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            border: Border.all(
+                              width: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          child: Builder(builder: (context) {
+                            if (widget.currentUser == null) {
+                              return Container();
+                            }
+                            Firestore.instance
+                                .collection("user-data")
+                                .document(widget.currentUser.uid)
+                                .get()
+                                .then((ds) {
+                              setState(() {
+                                avatarUrl = ds.data["avatar-url"];
+                              });
+                            });
+
+                            return avatarUrl != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.5),
+                                    child: avatarUrl != ""
+                                        ? CachedNetworkImage(
+                                            fit: BoxFit.cover,
+                                            imageUrl: avatarUrl,
+                                          )
+                                        : Image.asset("assets/avatar.png"),
+                                  )
+                                : Container();
+                          }),
+                        ),
+                      ),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        activeSelectionIndex = 3;
+                      });
+                      widget.onBottomBarAction(3);
+                    },
+                  ),
+                ],
               ),
-              onTap: () {
-                setState(() {
-                  activeSelectionIndex = 3;
-                });
-                widget.onBottomBarAction(3);
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
