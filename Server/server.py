@@ -29,7 +29,6 @@ def home():
     return render_template("home.html")
 
 
-@app.route('/api')
 @app.route('/api/sentiment', methods=['POST'])
 def sentiment():
     text = ""
