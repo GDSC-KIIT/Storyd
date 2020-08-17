@@ -63,17 +63,20 @@ def recommend():
     recommends = list()
 
     preferred_topics = user_info.document(uid).get().to_dict()["preferredTopics"]
-    most_recommended_posts = list()
-    for n in range(3, 0, -1):
+    print(preferred_topics)
+    """for n in range(3, 0, -1):
         for tags in combinations(preferred_topics, n):
             most_recommended_posts = set(story_collection.where("topics", "array_contains", tags[0]).stream())
-
+            
             for tag in tags[1:]:
                 most_recommended_posts &= set(story_collection.where("topics", "array_contains", tag).stream())
 
         for story in most_recommended_posts:
             if story.id not in recommends:
                 recommends.append(story.id)
+
+
+    print(recommends)"""
 
     return jsonify({
         "recommends": recommends,

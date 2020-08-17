@@ -71,8 +71,9 @@ class KeyWordGenerator:
         text = [lem.lemmatize(word) for word in text if word not in self.stop_words]
 
         text = " ".join(list(set(text)))
-
+        
         text = self.cv.transform([text])
+        
         tf_idf_vector = self.tfidf_transformer.transform(text)
         feature_names = self.cv.get_feature_names()
 
@@ -184,4 +185,4 @@ if __name__ == '__main__':
     print(sd.get_sentiment_data("What an awful day"))
 
     r = RecommendationEngine()
-    print(r.recommend_genres([("Action", 4.0)]))
+    print(r.recommend_genres([("Action", 4.0), ("Mystery", 5.0)]))
